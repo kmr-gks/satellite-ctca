@@ -1,0 +1,2 @@
+# satellite-ctca
+CoToCoAを用いてemsesのデータを人工衛星形式に変換するソフト
