@@ -1,0 +1,51 @@
+program coupler_test
+  use mpi
+  use ctca
+  implicit none
+!
+! include 'mpif.h'
+!
+  integer :: ier
+  real(kind=4) :: location(3,2)
+  integer(kind=4) :: location_r(2)
+!
+  integer(kind=4) :: myrank, nprocs, areaid, progid, fromrank
+  integer(kind=4) :: reqinfo(4)
+!
+  call CTCAC_init()
+  call MPI_Comm_size(CTCA_subcomm, nprocs, ier)
+  call MPI_Comm_rank(CTCA_subcomm, myrank, ier)
+!
+  call CTCAC_regarea_real4(areaid)
+print *,"end cpl reg area"
+!
+  location(:,:) = 0.0
+  location_r(:) = 0
+!
+  do while (.true.)
+    call CTCAC_pollreq_withreal4(reqinfo, fromrank, location_r, 2, location, 3*2)
+    if(CTCAC_isfin()) exit
+!
+  print *, "Coupler pollreq_withreal4 information"
+  print '(i3,3f8.2)', location_r(1),location(1,1),location(2,1),location(3,1)
+  print '(i3,3f8.2)', location_r(2),location(1,2),location(2,2),location(3,2)
+!
+    if(fromrank >= 0) then
+    print *, "coupler got req"
+! decide progid
+      progid = 1
+! enqueue request
+      call CTCAC_enqreq_withreal4(reqinfo, progid, location_r, 1, location, 3)
+    print *, "coupler enqreq done 1"
+! decide progid
+!      progid = 2
+! enqueue request
+!      call CTCAC_enqreq_withreal4(reqinfo, progid, location_r(2), 1, location(1,2), 3)
+!    print *, "coupler enqreq done 2"
+    end if
+  end do
+
+  call CTCAC_finalize()
+!
+  stop
+end program coupler_test

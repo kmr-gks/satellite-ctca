@@ -1,0 +1,48 @@
+program dout
+  use mpi
+  use ctca
+  use tcp_server_mod
+  implicit none
+!
+  type pinfo
+    integer(kind=4) :: rank, pgrid(2), offset(2), dsize(2), stat
+  end type
+  integer(kind=4) :: ierr, myrank, nprocs, len
+  integer(kind=4) :: dareaid, iareaid
+  integer(kind=4) :: frmrank, hdat(10), ndat=10
+  integer(kind=4) :: nsdom, lsdom(2)
+  integer(kind=4) :: wflag(10) = 0
+  integer(kind=4) :: nread, iread, jread
+  integer(kind=4) :: szx, szy, szt, osx, osy
+  real(kind=4),allocatable :: odat(:,:), sdat(:,:)
+  type(pinfo),allocatable :: ptable(:)
+  character(128) :: hostname
+  character(7) :: ofname
+  logical :: vb=.false.
+  integer(kind=4) :: i, j, k, m
+  integer :: socket, ret, comlen
+!
+  call CTCAW_init(0, 1)
+  call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
+  call MPI_Comm_rank(CTCA_subcomm, myrank, ierr)
+  call MPI_Get_processor_name(hostname, len, ierr)
+!
+  print*, "dout: ", myrank, " / ", nprocs, " : ", hostname
+!
+  call CTCAW_regarea_real4(dareaid)
+  call CTCAW_regarea_int(iareaid)
+
+!
+
+  do while( .true. )
+    call CTCAW_pollreq(frmrank,hdat,ndat)
+    if( CTCAW_isfin() ) exit
+
+    call CTCAW_complete()
+  end do
+
+  print*, "dout is finalizing..."
+  call CTCAW_finalize()
+!
+  stop
+end program dout

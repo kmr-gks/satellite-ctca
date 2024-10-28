@@ -1,3 +1,21 @@
+#cotocoa executables
+main/coupler/coupler
+main/requester/make.log
+main/requester/mpiemses3D
+main/mpiemses3D
+main/worker/dout
+
+#emses output
+main/SNAPSHOT*/
+main/requester-data/*.h5
+main/requester-data/chgacm1
+main/requester-data/chgacm2
+main/requester-data/icur
+main/requester-data/ocur
+main/requester-data/pbody
+main/requester-data/pprobe
+main/requester-data/seyield
+
 # Prerequisites
 *.d
 
