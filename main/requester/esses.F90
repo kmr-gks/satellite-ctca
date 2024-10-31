@@ -76,6 +76,7 @@
   integer(kind=4) :: hdat(10), ndat=10
   real(kind=8) :: smltime,emltime
   logical :: rebalance
+  integer(kind=4) ::sendreq_params(10)
 
 
 !--- MPI Initialize ---
@@ -327,6 +328,12 @@
                                  t = t+dt
                                itime = istep
       if(myid.eq.0) write(6,*) '**** step --------- ',itime
+      if(myid.eq.447) then
+        !phiの先頭100要素を出力
+        phi_ctca = phi(1,1:phi_area_size,0,0,1)
+        print*, "requester: esses-phi_ctca=", phi_ctca
+        call CTCAR_sendreq(sendreq_params,size(sendreq_params))
+      end if
 !                         if(istep.ne.nstep) then
                                  ustep = 2
 !                         else

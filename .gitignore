@@ -16,6 +16,9 @@ main/requester-data/pbody
 main/requester-data/pprobe
 main/requester-data/seyield
 
+#backup
+*.old*/
+
 # Prerequisites
 *.d
 

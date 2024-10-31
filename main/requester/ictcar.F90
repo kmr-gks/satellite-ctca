@@ -41,8 +41,11 @@
       end if
 
 !-------------------- 
+      allocate(phi_ctca(phi_area_size))
       call CTCAR_regarea_real4(datopn(:,:,1), ngt, dareaid)
       call CTCAR_regarea_int(wflag, 10, iareaid)
+      !call CTCAR_regarea_real8(phi(1,1:phi_area_size,0,0,1),phi_area_size,phi_areaid)
+      call CTCAR_regarea_real8(phi_ctca,phi_area_size,phi_areaid)
       
 
 !-------------------- 
