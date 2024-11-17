@@ -61,7 +61,6 @@
   use oh_type
   use paramt
   use allcom
-  use ctcareq
 #include "oh_stats.h"
 !#define MCW MPI_COMM_WORLD
 #define MCW CTCA_subcomm
@@ -340,7 +339,7 @@
         phi_ctca = phi(1,1:x,y/2,z/2,1)
         !call ctcareq_main()
         print*, "CTCArequester: phi=", phi_ctca
-        call CTCAR_sendreuyo0q(sendreq_params,size(sendreq_params))
+        call CTCAR_sendreq(sendreq_params,size(sendreq_params))
       end if
 !                         if(istep.ne.nstep) then
                                  ustep = 2
