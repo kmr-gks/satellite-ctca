@@ -10,9 +10,11 @@ main/worker/dout
 #emses output
 SNAPSHOT*/
 *.h5
+*.xdmf
 chgacm1
 chgacm2
 chgmov
+cpmxdiag*
 currnt
 energy*
 ewave
@@ -24,6 +26,7 @@ oltime
 pbody*
 pprobe
 seyield
+volt
 
 #backup
 *.old*/

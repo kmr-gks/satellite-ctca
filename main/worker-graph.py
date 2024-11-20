@@ -6,7 +6,7 @@ import io
 
 
 #load data from file
-file_name="dshield1.sh.2928515.out"
+file_name="dshield1.sh.???????.out"
 
 fig=plt.figure()
 ims=[]
