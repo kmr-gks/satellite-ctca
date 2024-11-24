@@ -336,7 +336,7 @@
         y=phi_shape(3)
         z=phi_shape(4)
         print*,"x,y,z",x,y,z
-        phi_ctca = phi(1,1:x,y/2,z/2,1)
+        phi_ctca = phi(1,1:phi_area_size,y/2,z/2,1)
         !call ctcareq_main()
         print*, "CTCArequester: phi=", phi_ctca
         call CTCAR_sendreq(sendreq_params,size(sendreq_params))

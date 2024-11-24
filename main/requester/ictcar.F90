@@ -61,7 +61,7 @@
         hdat(3) = ivcut
         hdat(4:6) = (/nx,ny,nz/)
         hdat(7:9) = nodes(1:3)
-        call CTCAR_sendreq(hdat,ndat)
+        !call CTCAR_sendreq(hdat,ndat)
       end if
 
 
