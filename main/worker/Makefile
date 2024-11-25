@@ -16,8 +16,8 @@ OBJS = worker.f90
 
 all: dout
 
-dout: $(OBJS) tcp-server-mod.o tcp-server-lib.o
-	$(MPIFC) $(CFLAGS) $(LDFLAGS) $(FFLAGS) worker.f90 -o dout $(F_LIBS) $(LIBS) tcp-server-mod.o tcp-server-lib.o
+dout: $(OBJS)
+	$(MPIFC) $(CFLAGS) $(LDFLAGS) $(FFLAGS) worker.f90 -o dout $(F_LIBS) $(LIBS)
 
 tcp-server-mod.o:
 	$(FC) $(FFLAGS) -c tcp-server-mod.f90

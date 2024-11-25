@@ -1,7 +1,6 @@
 program dout
   use mpi
   use ctca
-  use tcp_server_mod
   implicit none
 !
   type pinfo
