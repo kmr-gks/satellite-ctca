@@ -14,10 +14,10 @@ OBJS = worker.f90
 
 .SUFFIXES: .f90 .o
 
-all: dout
+all: worker
 
-dout: $(OBJS)
-	$(MPIFC) $(CFLAGS) $(LDFLAGS) $(FFLAGS) worker.f90 -o dout $(F_LIBS) $(LIBS)
+worker: $(OBJS)
+	$(MPIFC) $(CFLAGS) $(LDFLAGS) $(FFLAGS) worker.f90 -o worker $(F_LIBS) $(LIBS)
 
 tcp-server-mod.o:
 	$(FC) $(FFLAGS) -c tcp-server-mod.f90
@@ -26,4 +26,4 @@ tcp-server-lib.o:
 	$(CC) $(CFLAGS) -c tcp-server-lib.c
 
 clean:
-	/bin/rm -f  *.mod *.o dout
+	/bin/rm -f  *.mod *.o worker
