@@ -1,11 +1,14 @@
 #cotocoa executables
-main/coupler/coupler
-main/requester/make.log
+*/coupler/coupler
+*/requester/make.log
 mpiemses3D
-main/worker/dout
+*/worker/dout
 
 #cotocoa output
+out
 *.gif
+*.png
+*.mp4
 
 #emses output
 SNAPSHOT*/
