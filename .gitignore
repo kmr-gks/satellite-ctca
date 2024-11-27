@@ -2,7 +2,7 @@
 */coupler/coupler
 */requester/make.log
 mpiemses3D
-*/worker/dout
+*/worker/worker
 
 #cotocoa output
 out
