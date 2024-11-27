@@ -6,6 +6,7 @@
 
 &esorem
   emflag = 0
+  usecotocoa=1
 /
 
 &jobcon
