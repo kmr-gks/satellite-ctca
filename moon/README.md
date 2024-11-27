@@ -2,18 +2,6 @@ CoToCoAを用いてEMSESのデータを共有するサンプルコード
 
 requesterの内のコードを一部変更する必要がある。
 
-`allcom.F90`
-以下の変数を追加する
-
-```fortran
-    !共有するphiの配列
-    real*8,allocatable    :: phi_data(:)
-    !共有する配列のサイズ
-    integer(kind=8)               :: phi_data_size=35
-    !共有領域のエリアID
-    integer               :: phi_areaid
-```
-
 `esses.F90`
 メインループ部分(`esses_mainstep`を呼び出す前か後にこのコードを追加する)
 
@@ -22,8 +10,46 @@ if(usecotocoa.eq.1) call send_data
 ```
 
 `ictcar.F90`
-ccinit内に追加
+以下の内容に書き換える
 ```fortran
+module m_ictcar
+    use oh_type
+    use paramt
+    use allcom
+#define OH_LIB_LEVEL 3
+#include "ohhelp_f.h"
+    implicit none
+    private
+    public ccinit, send_data
+
+    !共有するphiの配列
+    real*8,allocatable    :: phi_data(:)
+    !共有する配列のサイズ
+    integer(kind=8)               :: phi_data_size=35
+    !共有領域のエリアID
+    integer               :: phi_areaid
+
+contains
+
+!requesterは領域を登録することと、リクエストを送ることを行う
+subroutine ccinit
+!
+!   ____________________________________________________________
+!
+!               S U B R O U T I N E   C C I N I T
+!   ____________________________________________________________
+!
+!   ............................................................
+!   .                                                          .
+!   ............................................................
+!
+!-------------------- initialization for CoToCoA (ex. regarea)
+
+    implicit none
+!
+    
+! 
+
 !-------------------- 
     !共有する配列の領域を確保
     allocate(phi_data(phi_data_size))
@@ -31,9 +57,11 @@ ccinit内に追加
 !-------------------- 
     !エリアIDを取得
     call CTCAR_regarea_real8(phi_data,phi_data_size,phi_areaid)
-```
-次のサブルーチンを追加
-```fortran
+
+    return
+end subroutine ccinit
+
+!send data with cotocoa
 subroutine send_data
     use allcom
     implicit none
@@ -57,6 +85,8 @@ subroutine send_data
         call CTCAR_sendreq(req_params,size(req_params))
     end if
 end subroutine send_data
+
+end module m_ictcar
 ```
 
 
