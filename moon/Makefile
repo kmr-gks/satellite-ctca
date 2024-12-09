@@ -2,7 +2,7 @@ all:
 	make -C ../cotocoa/src
 	make -C ../cotocoa/test
 	make -C ./coupler
-	make -C ./requester
+	make -C ./requester requester
 	make -C ./worker
 	@echo "ビルド成功"
 
