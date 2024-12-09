@@ -40,7 +40,7 @@ contains
             pbuf_data(:,4)=pbuf(:)%vx
             pbuf_data(:,5)=pbuf(:)%vy
             pbuf_data(:,6)=pbuf(:)%vz
-            print*, "requester: pbuf_vel=", pbuf_data(1:10,:)
+            !print*, "requester: pbuf_vel=", pbuf_data(1:10,:)
             !リクエスト時のデータを設定
             req_params(1)=from_rank
             req_params(2)=pbuf_size

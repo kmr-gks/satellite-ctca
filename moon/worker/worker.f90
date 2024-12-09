@@ -6,13 +6,15 @@ program worker
   integer :: ierr, myrank, nprocs
   !エリアID
   integer :: pbuf_id
-  integer :: i
+  integer :: i,step=0
   integer :: from_rank
   !リクエストを受け取るときのデータ
   integer ::req_params(10)
   !受け取るデータとそのサイズ
   real*8,allocatable    :: pbuf_data(:,:)
   integer :: pbuf_size, pbuf_mem
+  real(kind=8) :: xmax,xmin,shipx,shipy,shipz,ave
+  real(kind=8) :: dist,mass=1,energy
 !
   call CTCAW_init(0, 1)
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
@@ -24,6 +26,8 @@ program worker
   call CTCAW_regarea_real8(pbuf_id)
 !
   do while( .true. )
+    step = step + 1
+    print*,"step",step
     !リクエストを受けとる
     call CTCAW_pollreq(from_rank,req_params,size(req_params))
     if( CTCAW_isfin() ) exit
@@ -38,11 +42,26 @@ program worker
 
     !read_dataにデータを読み込む
     call CTCAW_readarea_real8(pbuf_id,from_rank,0,pbuf_size*pbuf_mem,pbuf_data)
-    !pbuf_velを速度単位に変換
-    print*, "CTCAworker: pbuf_data="
-    do i = 1, 10
-      print*,pbuf_data(i,:)
+
+    !position of satellite
+    shipx=step
+    shipy=5
+    shipz=145
+    
+    do i=1, pbuf_size
+      !check the distance between satellite and the object
+      dist=sqrt((pbuf_data(i,1)-shipx)**2+(pbuf_data(i,2)-shipy)**2+(pbuf_data(i,3)-shipz)**2)
+      if (dist.lt.80) then
+        !calculate the energy
+        energy=mass*0.5*(pbuf_data(i,4)**2+pbuf_data(i,5)**2+pbuf_data(i,6)**2)
+        print*,"energy",energy
+      end if
     end do
+
+    !print*, "CTCAworker: pbuf_data="
+    !do i = 1, 10
+    !  print*,pbuf_data(i,:)
+    !end do
 
     call CTCAW_complete()
   end do
