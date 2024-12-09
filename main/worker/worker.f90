@@ -1,14 +1,13 @@
 program dout
   use mpi
   use ctca
-  use tcp_server_mod
   implicit none
 !
   type pinfo
     integer(kind=4) :: rank, pgrid(2), offset(2), dsize(2), stat
   end type
   integer(kind=4) :: ierr, myrank, nprocs, len
-  integer(kind=4) :: dareaid, iareaid, phi_areaid,phi_area_size=10
+  integer(kind=4) :: dareaid, iareaid, phi_areaid,phi_area_size=35
   integer(kind=4) :: frmrank, hdat(10), ndat=10
   integer(kind=4) :: nsdom, lsdom(2)
   integer(kind=4) :: wflag(10) = 0
@@ -40,8 +39,11 @@ program dout
     call CTCAW_pollreq(frmrank,hdat,ndat)
     if( CTCAW_isfin() ) exit
     !read_areaしてポテンシャルを取得する
-    call CTCAW_readarea_real8(phi_areaid,447,0,phi_area_size,read_data)
-    print*, "worker: read_data=", read_data
+    call CTCAW_readarea_real8(phi_areaid,51,0,phi_area_size,read_data)
+    print*, "CTCAworker: read_data="!, read_data
+    do i = 1, size(read_data)
+      write(*, "(A,E)", advance="no") ",", read_data(i)
+    end do
 
     call CTCAW_complete()
   end do

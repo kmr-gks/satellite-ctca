@@ -59,7 +59,7 @@
     integer               :: ctypes(3,2,BNR+1,CNR)
     integer               :: fsizes(2,OH_DIMENSION,FNR)
     integer               :: wflag(10),dareaid,iareaid,phi_areaid
-    integer(kind=8)               :: phi_area_size=10
+    integer(kind=8)               :: phi_area_size=35
     integer               :: ivplane,ivcut,ivsnap=0
 !    integer,allocatable   :: medi(:,:,:,:)
     real*8,allocatable    :: eb(:,:,:,:,:)

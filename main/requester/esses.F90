@@ -77,6 +77,7 @@
   real(kind=8) :: smltime,emltime
   logical :: rebalance
   integer(kind=4) ::sendreq_params(10)
+  integer(kind=4) ::x,y,z,phi_shape(5),i
 
 
 !--- MPI Initialize ---
@@ -328,10 +329,16 @@
                                  t = t+dt
                                itime = istep
       if(myid.eq.0) write(6,*) '**** step --------- ',itime
-      if(myid.eq.447) then
-        !phiの先頭100要素を出力
-        phi_ctca = phi(1,1:phi_area_size,0,0,1)
-        print*, "requester: esses-phi_ctca=", phi_ctca
+      if(myid.eq.51) then
+        phi_shape=shape(phi)
+        !35*35*21
+        x=phi_shape(2)
+        y=phi_shape(3)
+        z=phi_shape(4)
+        print*,"x,y,z",x,y,z
+        phi_ctca = phi(1,1:phi_area_size,y/2,z/2,1)
+        !call ctcareq_main()
+        print*, "CTCArequester: phi=", phi_ctca
         call CTCAR_sendreq(sendreq_params,size(sendreq_params))
       end if
 !                         if(istep.ne.nstep) then

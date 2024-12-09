@@ -1,3 +1,7 @@
 [submodule "cotocoa"]
 	path = cotocoa
 	url = https://github.com/kmr-gks/cotocoa.git
+[submodule "moon/MPIEMSES3D"]
+	path = moon/requester
+	url = https://github.com/kmr-gks/MPIEMSES3D.git
+	branch = cotocoa
