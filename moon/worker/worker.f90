@@ -5,14 +5,14 @@ program worker
 !
   integer :: ierr, myrank, nprocs
   !エリアID
-  integer :: phi_areaid
+  integer :: pbuf_id
   integer :: i
   integer :: from_rank
   !リクエストを受け取るときのデータ
   integer ::req_params(10)
   !受け取るデータとそのサイズ
-  real*8,allocatable    :: read_data(:)
-  integer :: read_data_size
+  real*8,allocatable    :: pbuf_vel(:)
+  integer :: pbuf_size
 !
   call CTCAW_init(0, 1)
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
@@ -21,7 +21,7 @@ program worker
   print*, "worker: ", myrank, " / ", nprocs
 !
 ! エリアIDを取得
-  call CTCAW_regarea_real8(phi_areaid)
+  call CTCAW_regarea_real8(pbuf_id)
 !
   do while( .true. )
     !リクエストを受けとる
@@ -29,17 +29,17 @@ program worker
     if( CTCAW_isfin() ) exit
     !リクエスト時のデータをもとに受け取るデータの情報をみる
     from_rank = req_params(1)
-    read_data_size = req_params(2)
+    pbuf_size = req_params(2)
     !初回のみ領域確保
-    if(.not.allocated(read_data)) then
-      allocate(read_data(read_data_size))
+    if(.not.allocated(pbuf_vel)) then
+      allocate(pbuf_vel(pbuf_size))
     end if
 
     !read_dataにデータを読み込む
-    call CTCAW_readarea_real8(phi_areaid,from_rank,0,read_data_size,read_data)
-    print*, "CTCAworker: read_data="
-    do i = 1, read_data_size
-      write(*, "(A,E)", advance="no") ",", read_data(i)
+    call CTCAW_readarea_real8(pbuf_id,from_rank,0,pbuf_size,pbuf_vel)
+    print*, "CTCAworker: pbuf_vel="
+    do i = 1, 10
+      write(*, "(A,E)", advance="no") ",", pbuf_vel(i)
     end do
 
     call CTCAW_complete()
