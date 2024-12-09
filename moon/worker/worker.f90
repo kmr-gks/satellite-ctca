@@ -11,8 +11,8 @@ program worker
   !リクエストを受け取るときのデータ
   integer ::req_params(10)
   !受け取るデータとそのサイズ
-  real*8,allocatable    :: pbuf_vel(:)
-  integer :: pbuf_size
+  real*8,allocatable    :: pbuf_data(:,:)
+  integer :: pbuf_size, pbuf_mem
 !
   call CTCAW_init(0, 1)
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
@@ -30,16 +30,18 @@ program worker
     !リクエスト時のデータをもとに受け取るデータの情報をみる
     from_rank = req_params(1)
     pbuf_size = req_params(2)
+    pbuf_mem = req_params(3)
     !初回のみ領域確保
-    if(.not.allocated(pbuf_vel)) then
-      allocate(pbuf_vel(pbuf_size))
+    if(.not.allocated(pbuf_data)) then
+      allocate(pbuf_data(pbuf_size,pbuf_mem))
     end if
 
     !read_dataにデータを読み込む
-    call CTCAW_readarea_real8(pbuf_id,from_rank,0,pbuf_size,pbuf_vel)
-    print*, "CTCAworker: pbuf_vel="
+    call CTCAW_readarea_real8(pbuf_id,from_rank,0,pbuf_size*pbuf_mem,pbuf_data)
+    !pbuf_velを速度単位に変換
+    print*, "CTCAworker: pbuf_data="
     do i = 1, 10
-      write(*, "(A,E)", advance="no") ",", pbuf_vel(i)
+      print*,pbuf_data(i,:)
     end do
 
     call CTCAW_complete()
