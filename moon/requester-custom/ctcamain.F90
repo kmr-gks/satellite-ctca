@@ -9,19 +9,20 @@ module m_ctcamain
     public cotocoa_init, cotocoa_mainstep, cotocoa_finalize
 
     !共有するphiの配列
-    real*8,allocatable    :: phi_data(:)
+    real(kind=8),allocatable :: pbuf_data(:,:)
     !共有する配列のサイズ
-    integer(kind=8)       :: phi_data_size=35
+    integer(kind=8)       :: pbuf_size, pbuf_mem=6
     !共有領域のエリアID
-    integer               :: phi_areaid
+    integer               :: pbuf_id
 
 contains
 
     subroutine cotocoa_init
+        pbuf_size=size(pbuf)
         !共有する配列の領域を確保
-        allocate(phi_data(phi_data_size))
+        allocate(pbuf_data(pbuf_size,pbuf_mem))
         !エリアIDを取得
-        call CTCAR_regarea_real8(phi_data,phi_data_size,phi_areaid)
+        call CTCAR_regarea_real8(pbuf_data,pbuf_size*pbuf_mem,pbuf_id)
     end subroutine cotocoa_init
 
     subroutine cotocoa_mainstep
@@ -29,19 +30,21 @@ contains
     
         !リクエストを送るときのデータ
         integer(kind=4) ::req_params(10)
-        integer(kind=4) ::x,y,z,phi_shape(5),i
         integer ::from_rank=10
 
         if(myid.eq.from_rank) then
-            phi_shape=shape(phi)
-            x=phi_shape(2)
-            y=phi_shape(3)
-            z=phi_shape(4)
-            phi_data = phi(1,1:phi_data_size,y/2,z/2,1)
-            print*, "requester: phi_data=", phi_data
+            !pbuf_posには位置情報を格納
+            pbuf_data(:,1)=pbuf(:)%x
+            pbuf_data(:,2)=pbuf(:)%y
+            pbuf_data(:,3)=pbuf(:)%z
+            pbuf_data(:,4)=pbuf(:)%vx
+            pbuf_data(:,5)=pbuf(:)%vy
+            pbuf_data(:,6)=pbuf(:)%vz
+            !print*, "requester: pbuf_vel=", pbuf_data(1:10,:)
             !リクエスト時のデータを設定
             req_params(1)=from_rank
-            req_params(2)=phi_data_size
+            req_params(2)=pbuf_size
+            req_params(3)=pbuf_mem
             !リクエスト時にデータを送ることができる
             call CTCAR_sendreq(req_params,size(req_params))
         end if

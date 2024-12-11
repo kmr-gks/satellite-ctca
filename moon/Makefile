@@ -1,4 +1,5 @@
 all:
+	cp -r ./requester-custom/* ./requester/src/cotocoa
 	make -C ../cotocoa/src
 	make -C ../cotocoa/test
 	make -C ./coupler
