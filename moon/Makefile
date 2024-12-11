@@ -1,15 +1,13 @@
 all:
 	cp -r ./requester-custom/* ./requester/src/cotocoa
-	make -C ../cotocoa/src
-	make -C ../cotocoa/test
+	make -C ./requester/lib/cotocoa/src
 	make -C ./coupler
 	make -C ./requester requester
 	make -C ./worker
 	@echo "ビルド成功"
 
 clean:
-	make -C ../cotocoa/src clean
-	make -C ../cotocoa/test clean
+	make -C ./requester/lib/cotocoa/src clean
 	make -C ./coupler clean
 	make -C ./requester clean
 	make -C ./worker clean
