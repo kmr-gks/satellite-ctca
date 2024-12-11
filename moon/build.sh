@@ -68,7 +68,7 @@ fi
 
 # Update requester/src/cotocoa file
 mv requester/src/cotocoa/ctcamain.F90 requester/src/cotocoa/ctcamain.F90.original
-ln -s ../../../requester-custom/ctcamain.F90 requester/src/cotocoa/ctcacustom.F90
+ln -s ../../../modify/ctcamain.F90 requester/src/cotocoa/ctcacustom.F90
 
 (
 cd requester
