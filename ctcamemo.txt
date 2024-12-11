@@ -1,0 +1,57 @@
+目標
+CoToCoAとEMSESの仕組みを調べる
+CoToCoAを用いてEMSESからポテンシャルなどのデータを取得する
+
+CoToCoA
+
+coupler
+coupler.F90
+regareaで領域を確保し、その領域のポインタ(ハンドル)を取得する
+
+requester(EMSES)
+emses.F90
+磁場がある場合のメインループ
+
+esses.F90
+静電環境のメインループ。これを使用
+myrankはCoToCoA全体のプロセスの通し番号(emsesのプロセスは途中の数字で始まるかも)
+myidはemses内のプロセス番号(必ず0から)
+
+ictcar.F90
+CTCAR_regareaで領域確保している。requesterが読み書きする。
+
+worker.f90
+regareaで領域を登録し、areaidを取得し、そのidを使用してデータを読み取る(whileループ内)
+
+領域を内側のメモリ領域に登録(regarea)する
+essesでregareaにphiを代入する
+allcom.F90
+グローバル変数と配列を定義する。
+phi(:,:,:,:,:)はポテンシャルの5次元配列
+phi(a,b,c,d,e)
+a 1のみ。ベクトルの場合次元毎に数字が変わる。(電場のとき 1:Ex,2:Ey,3:Ez)
+b x
+c y
+d z
+e 1を指定。1以外はOhHelpで使用する。
+
+1プロセスが管理する空間の数が16の場合
+0-16,16-32,32-
+領域は19個(index -1~17)0~16を使用
+sdomを使用してmpiプロセスが持つ領域の範囲を取得できる。
+
+worker
+領域を読取り、書き込みする。
+couplerとworkerでのpollreqでの配列サイズはそろえないといけない。
+
+2024-10-30
+ヒストグラム
+粒子のデータを受け取り、エネルギーごとにビンを分けてヒストグラムにする
+高村さんに可視化の方法を聞く
+
+可視化できることを優先
+軌道ごとか
+時間ごとか
+
+workerをpythonにしてもいいかも
+
