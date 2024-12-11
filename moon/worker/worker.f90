@@ -15,9 +15,11 @@ program worker
   integer :: pbuf_size, pbuf_mem
   !position of satellite
   real(kind=8) :: shipx,shipy,shipz
-  real(kind=8) :: dist,mass=1,energy
+  real(kind=8) :: dist,neighbour_thr,mass=1,energy
+  !environment variables
+  character(len=100) :: env_shipy,env_shipz,env_neighbour_thr
   !output file of energy
-  character(len=100) :: output_file_name="output.csv"
+  character(len=100) :: output_file_name
   integer :: output_file_unit=10
 !
   call CTCAW_init(0, 1)
@@ -25,7 +27,17 @@ program worker
   call MPI_Comm_rank(CTCA_subcomm, myrank, ierr)
 !
   print*, "worker: ", myrank, " / ", nprocs
-!
+! set parameters from environment variables
+  !shipy=5
+  call get_environment_variable("SHIPY",env_shipy)
+  read(env_shipy,*) shipy
+  !shipz=145
+  call get_environment_variable("SHIPZ",env_shipz)
+  read(env_shipz,*) shipz
+  !neighbour_thr=80
+  call get_environment_variable("NEIGHBOUR_THR",env_neighbour_thr)
+  read(env_neighbour_thr,*) neighbour_thr
+  call get_environment_variable("OUTPUT_FILE_NAME",output_file_name)
 ! エリアIDを取得
   call CTCAW_regarea_real8(pbuf_id)
   !open the output file
@@ -51,13 +63,11 @@ program worker
 
     !position of satellite
     shipx=step
-    shipy=5
-    shipz=145
     
     do i=1, pbuf_size
       !check the distance between satellite and the object
       dist=sqrt((pbuf_data(i,1)-shipx)**2+(pbuf_data(i,2)-shipy)**2+(pbuf_data(i,3)-shipz)**2)
-      if (dist.lt.80) then
+      if (dist.lt.neighbour_thr) then
         !calculate the energy
         energy=mass*0.5*(pbuf_data(i,4)**2+pbuf_data(i,5)**2+pbuf_data(i,6)**2)
         write(output_file_unit,'(I,",",F)') step,energy

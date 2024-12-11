@@ -13,7 +13,13 @@ exec 2>&1
 module load fftw
 module load hdf5/1.12.2_intel-2022.3-impi
 
+#set environment variables
 export EMSES_DEBUG=no
+
+export SHIPY=5
+export SHIPZ=145
+export NEIGHBOUR_THR=80
+export OUTPUT_FILE_NAME="output,sy=${SHIPY},sz=${SHIPZ},nt=${NEIGHBOUR_THR}.csv"
 
 date
 
@@ -25,5 +31,7 @@ date
 # Postprocessing(visualization code, etc.)
 
 echo ...done
+
+python histogram.py 
 
 date
