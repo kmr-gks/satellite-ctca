@@ -2,7 +2,8 @@ all:
 	cp -r ./requester-custom/* ./requester/src/cotocoa
 	make -C ./requester/lib/cotocoa/src
 	make -C ./coupler
-	make -C ./requester requester
+#	make -C ./requester requester
+	cotocoa_mode=COTOCOA_REQUESTER ./build.sh
 	make -C ./worker
 	@echo "ビルド成功"
 
