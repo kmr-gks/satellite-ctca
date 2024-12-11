@@ -13,8 +13,12 @@ program worker
   !受け取るデータとそのサイズ
   real*8,allocatable    :: pbuf_data(:,:)
   integer :: pbuf_size, pbuf_mem
-  real(kind=8) :: xmax,xmin,shipx,shipy,shipz,ave
+  !position of satellite
+  real(kind=8) :: shipx,shipy,shipz
   real(kind=8) :: dist,mass=1,energy
+  !output file of energy
+  character(len=100) :: output_file_name="output.csv"
+  integer :: output_file_unit=10
 !
   call CTCAW_init(0, 1)
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
@@ -24,10 +28,12 @@ program worker
 !
 ! エリアIDを取得
   call CTCAW_regarea_real8(pbuf_id)
+  !open the output file
+  open(unit=output_file_unit,file=output_file_name, status='replace', action='write')
+  write(output_file_unit,'(A)') "step,energy"
 !
   do while( .true. )
     step = step + 1
-    print*,"step",step
     !リクエストを受けとる
     call CTCAW_pollreq(from_rank,req_params,size(req_params))
     if( CTCAW_isfin() ) exit
@@ -54,7 +60,7 @@ program worker
       if (dist.lt.80) then
         !calculate the energy
         energy=mass*0.5*(pbuf_data(i,4)**2+pbuf_data(i,5)**2+pbuf_data(i,6)**2)
-        print*,"energy",energy
+        write(output_file_unit,'(I,",",F)') step,energy
       end if
     end do
 
@@ -68,6 +74,7 @@ program worker
 
   print*, "worker is finalizing..."
   call CTCAW_finalize()
+  close(output_file_unit)
 !
   stop
 end program worker

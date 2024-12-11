@@ -6,6 +6,7 @@ mpiemses3D
 
 #cotocoa output
 out
+output*
 *.gif
 *.png
 *.mp4
