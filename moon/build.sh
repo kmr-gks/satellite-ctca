@@ -96,7 +96,10 @@ export FPM_LDFLAGS=
 
 fpm install --prefix ./
 )
+build_status=$?
 
 #restore the original path
 unlink requester/src/cotocoa/ctcacustom.F90
 mv requester/src/cotocoa/ctcamain.F90.original requester/src/cotocoa/ctcamain.F90
+
+exit $build_status

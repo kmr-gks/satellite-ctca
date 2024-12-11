@@ -1,10 +1,19 @@
-all:
-	make -C ./requester/lib/cotocoa/src
-	make -C ./coupler
-#	make -C ./requester requester
-	cotocoa_mode=COTOCOA_REQUESTER ./build.sh
-	make -C ./worker
+.PHONY: all cotocoa coupler requester worker clean
+
+all: coupler worker requester cotocoa
 	@echo "ビルド成功"
+
+cotocoa:
+	make -C ./requester/lib/cotocoa/src
+
+coupler:
+	make -C ./coupler
+
+requester:
+	cotocoa_mode=COTOCOA_REQUESTER ./build.sh || { echo "Build failed in requester"; exit 1; }
+
+worker:
+	make -C ./worker
 
 clean:
 	make -C ./requester/lib/cotocoa/src clean
