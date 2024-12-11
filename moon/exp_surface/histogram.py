@@ -20,7 +20,7 @@ with open(file_name,encoding='utf-8') as f:
 			lines[i]=lines[i][len(data_str):-1]
 			particle_x.append(step)
 			particle_energy.append(float(lines[i]))
-	plt.hist2d(particle_x, particle_energy, norm=LogNorm())
+	plt.hist2d(particle_x, particle_energy, bins=(6,10), norm=LogNorm())
 	plt.colorbar(label='number of particles (pbuf)')
 	plt.xlabel("step/satellite x[pbuf%x]")
 	plt.ylabel("energy [pbuf%x^2]")
