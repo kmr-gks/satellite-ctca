@@ -66,6 +66,10 @@ else
 	echo "$PACKAGE:ok"
 fi
 
+# Update requester/src/cotocoa file
+mv requester/src/cotocoa/ctcamain.F90 requester/src/cotocoa/ctcamain.F90.original
+ln -s ../../../requester-custom/ctcamain.F90 requester/src/cotocoa/ctcacustom.F90
+
 (
 cd requester
 
@@ -92,3 +96,7 @@ export FPM_LDFLAGS=
 
 fpm install --prefix ./
 )
+
+#restore the original path
+unlink requester/src/cotocoa/ctcacustom.F90
+mv requester/src/cotocoa/ctcamain.F90.original requester/src/cotocoa/ctcamain.F90
