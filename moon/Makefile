@@ -1,6 +1,6 @@
 .PHONY: all cotocoa coupler requester worker clean
 
-all: coupler worker requester cotocoa
+all: cotocoa coupler worker requester
 	@echo "ビルド成功"
 
 cotocoa:
