@@ -7,29 +7,45 @@
 # 標準出力と標準エラー出力をリダイレクト
 exec 2>&1
 
+cat $0
+
 #set -x
 #export LD_LIBRARY_PATH="/LARGE0/gr20001/KUspace-share/common/hdf5-lib/hdf5-1.14.3-240410/lib:/LARGE0/gr20001/KUspace-share/common/fftw-lib/fftw-3.3.10-240410/lib:$LD_LIBRARY_PATH"
 
 module load fftw
 module load hdf5/1.12.2_intel-2022.3-impi
 
+#set environment variables
 export EMSES_DEBUG=no
+
+export SHIPY=5
+export SHIPZ=145
+export NEIGHBOUR_THR=80
+export FROM_RANK=10
+export OUTPUT_FILE_NAME="output,sy=${SHIPY},sz=${SHIPZ},nt=${NEIGHBOUR_THR},fr=${FROM_RANK}.csv"
 
 date
 
 rm *_0000.h5
 #dont use sbatch, use mysbatch and njob.sh instead
-srun -n130 -l --multi-prog multi.conf
+srun -l --multi-prog multi.conf
 date
 
 # Postprocessing(visualization code, etc.)
 
 echo ...done
 
-python generate_xdmf3.py nd*.h5 rhobk00_0000.h5
-python generate_xdmf3.py rho00_0000.h5
-python generate_xdmf3.py phisp00_0000.h5
-python generate_xdmf3.py ex00_0000.h5 ey00_0000.h5 ez00_0000.h5
-python generate_xdmf3.py j1x00_0000.h5 j1y00_0000.h5 j1z00_0000.h5 j2x00_0000.h5 j2y00_0000.h5 j2z00_0000.h5 j3x00_0000.h5 j3y00_0000.h5 j3z00_0000.h5
+if [ -f "$OUTPUT_FILE_NAME" ]; then
+	# ファイルサイズを取得 (バイト単位)
+	FILE_SIZE=$(stat -c%s "$OUTPUT_FILE_NAME")
+	if [ "$FILE_SIZE" -ge 1024 ]; then
+		echo "Running python script..."
+		python histogram.py 
+	else
+		echo "Size of file '$OUTPUT_FILE_NAME' is too small."
+	fi
+else
+	echo "File '$OUTPUT_FILE_NAME' does not exist."
+fi
 
 date

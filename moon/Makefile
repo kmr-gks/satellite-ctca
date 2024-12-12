@@ -1,15 +1,22 @@
-all:
-	cp -r ./requester-custom/* ./requester/src/cotocoa
-	make -C ../cotocoa/src
-	make -C ../cotocoa/test
-	make -C ./coupler
-	make -C ./requester requester
-	make -C ./worker
+.PHONY: all cotocoa coupler requester worker clean
+
+all: cotocoa coupler worker requester
 	@echo "ビルド成功"
 
+cotocoa:
+	make -C ./requester/lib/cotocoa/src
+
+coupler:
+	make -C ./coupler
+
+requester:
+	cotocoa_mode=COTOCOA_REQUESTER ./build.sh || { echo "Build failed in requester"; exit 1; }
+
+worker:
+	make -C ./worker
+
 clean:
-	make -C ../cotocoa/src clean
-	make -C ../cotocoa/test clean
+	make -C ./requester/lib/cotocoa/src clean
 	make -C ./coupler clean
 	make -C ./requester clean
 	make -C ./worker clean

@@ -14,6 +14,9 @@ module m_ctcamain
     integer(kind=8)       :: pbuf_size, pbuf_mem=6
     !共有領域のエリアID
     integer               :: pbuf_id
+    !rank that sends request
+    character(len=100) :: env_from_rank
+    integer               :: from_rank
 
 contains
 
@@ -23,6 +26,9 @@ contains
         allocate(pbuf_data(pbuf_size,pbuf_mem))
         !エリアIDを取得
         call CTCAR_regarea_real8(pbuf_data,pbuf_size*pbuf_mem,pbuf_id)
+        !get rank that sends request
+        call get_environment_variable("FROM_RANK",env_from_rank)
+        read(env_from_rank,*) from_rank
     end subroutine cotocoa_init
 
     subroutine cotocoa_mainstep
@@ -30,7 +36,6 @@ contains
     
         !リクエストを送るときのデータ
         integer(kind=4) ::req_params(10)
-        integer ::from_rank=10
 
         if(myid.eq.from_rank) then
             !pbuf_posには位置情報を格納
