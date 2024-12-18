@@ -9,7 +9,7 @@ file_name = os.environ["OUTPUT_FILE_NAME"]
 df=pd.read_csv(file_name)
 
 #plot histogram
-plt.hist2d(df['step'], df['energy'], bins=(6,10), norm=LogNorm())
+plt.hist2d(df['step'], df['energy'], bins=(10,10), norm=LogNorm())
 plt.colorbar(label='number of particles (pbuf)')
 plt.xlabel("step/satellite x[pbuf%x]")
 plt.ylabel("energy [pbuf%x^2]")

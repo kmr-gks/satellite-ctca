@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -p gr20001a
+#SBATCH -p gr10451a
 #SBATCH --rsc p=130:t=1:c=1
 #SBATCH -t 168:00:00
 #SBATCH -o %x.%j.out
@@ -18,11 +18,23 @@ module load hdf5/1.12.2_intel-2022.3-impi
 #set environment variables
 export EMSES_DEBUG=no
 
-export SHIPY=5
-export SHIPZ=145
-export NEIGHBOUR_THR=80
+export SHIPY=16
+export SHIPZ=256
+export NEIGHBOUR_THR=10
 export FROM_RANK=10
-export OUTPUT_FILE_NAME="output,sy=${SHIPY},sz=${SHIPZ},nt=${NEIGHBOUR_THR},fr=${FROM_RANK}.csv"
+export OUTPUT_FILE_NAME="output,sy=${SHIPY},sz=${SHIPZ},nt=${NEIGHBOUR_THR},fr=${FROM_RANK}"
+export EXTENTION=".csv"
+
+# check if the output file exists
+NEW_FILE_NAME="${OUTPUT_FILE_NAME}${EXTENTION}"
+COUNTER=0
+while [ -f "$NEW_FILE_NAME" ]; do
+	COUNTER=$((COUNTER+1))
+	NEW_FILE_NAME="${OUTPUT_FILE_NAME}_${COUNTER}${EXTENTION}"
+done
+
+OUTPUT_FILE_NAME="${NEW_FILE_NAME}"
+echo "output file: $OUTPUT_FILE_NAME"
 
 date
 

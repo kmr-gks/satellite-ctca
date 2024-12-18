@@ -27,8 +27,8 @@ contains
         !エリアIDを取得
         call CTCAR_regarea_real8(pbuf_data,pbuf_size*pbuf_mem,pbuf_id)
         !get rank that sends request
-        call get_environment_variable("FROM_RANK",env_from_rank)
-        read(env_from_rank,*) from_rank
+        !call get_environment_variable("FROM_RANK",env_from_rank)
+        !read(env_from_rank,*) from_rank
     end subroutine cotocoa_init
 
     subroutine cotocoa_mainstep
@@ -37,7 +37,8 @@ contains
         !リクエストを送るときのデータ
         integer(kind=4) ::req_params(10)
 
-        if(myid.eq.from_rank) then
+        from_rank=myid
+        !if(myid.eq.from_rank) then
             !pbuf_posには位置情報を格納
             pbuf_data(:,1)=pbuf(:)%x
             pbuf_data(:,2)=pbuf(:)%y
@@ -46,13 +47,15 @@ contains
             pbuf_data(:,5)=pbuf(:)%vy
             pbuf_data(:,6)=pbuf(:)%vz
             !print*, "requester: pbuf_vel=", pbuf_data(1:10,:)
+            print*, "CTCArequester: from_rank=", from_rank, " / istep=", istep,"pbuf=",pbuf_data(1,:)
             !リクエスト時のデータを設定
             req_params(1)=from_rank
             req_params(2)=pbuf_size
             req_params(3)=pbuf_mem
+            req_params(4)=istep
             !リクエスト時にデータを送ることができる
             call CTCAR_sendreq(req_params,size(req_params))
-        end if
+        !end if
     
     end subroutine cotocoa_mainstep
 

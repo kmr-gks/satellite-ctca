@@ -10,7 +10,7 @@ program coupler
   integer(kind=4) :: frmrank, progid
   integer(kind=4) :: req_params(10)
 !
-  call CTCAC_init()
+  call CTCAC_init_detail(1000, 100000, 1000, 80000, 10)
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
   call MPI_Comm_rank(CTCA_subcomm, myrank, ierr)
 !

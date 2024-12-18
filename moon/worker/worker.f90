@@ -20,7 +20,7 @@ program worker
   character(len=100) :: env_shipy,env_shipz,env_neighbour_thr
   !output file of energy
   character(len=100) :: output_file_name
-  integer :: output_file_unit=10
+  integer :: output_file_unit=10,particle_per_rank(130)
 !
   call CTCAW_init(0, 1)
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
@@ -45,7 +45,7 @@ program worker
   write(output_file_unit,'(A)') "step,energy"
 !
   do while( .true. )
-    step = step + 1
+    !step = step + 1
     !リクエストを受けとる
     call CTCAW_pollreq(from_rank,req_params,size(req_params))
     if( CTCAW_isfin() ) exit
@@ -53,6 +53,7 @@ program worker
     from_rank = req_params(1)
     pbuf_size = req_params(2)
     pbuf_mem = req_params(3)
+    step = req_params(4)
     !初回のみ領域確保
     if(.not.allocated(pbuf_data)) then
       allocate(pbuf_data(pbuf_size,pbuf_mem))
@@ -70,18 +71,16 @@ program worker
       if (dist.lt.neighbour_thr) then
         !calculate the energy
         energy=mass*0.5*(pbuf_data(i,4)**2+pbuf_data(i,5)**2+pbuf_data(i,6)**2)
+        particle_per_rank(from_rank)=particle_per_rank(from_rank)+1
         write(output_file_unit,'(I,",",F)') step,energy
       end if
     end do
 
-    !print*, "CTCAworker: pbuf_data="
-    !do i = 1, 10
-    !  print*,pbuf_data(i,:)
-    !end do
+    print*, "CTCAworker: from_rank=", from_rank, " / step=", step,"pbuf=",pbuf_data(1,:)
 
     call CTCAW_complete()
   end do
-
+  print*,particle_per_rank
   print*, "worker is finalizing..."
   call CTCAW_finalize()
   close(output_file_unit)
