@@ -9,53 +9,60 @@ module m_ctcamain
     public cotocoa_init, cotocoa_mainstep, cotocoa_finalize
 
     !共有するphiの配列
-    real(kind=8),allocatable :: pbuf_data(:,:)
+    real(kind=8),allocatable :: dist(:),energy(:)
     !共有する配列のサイズ
     integer(kind=8)       :: pbuf_size, pbuf_mem=6
     !共有領域のエリアID
-    integer               :: pbuf_id
-    !rank that sends request
-    character(len=100) :: env_from_rank
-    integer               :: from_rank
+    integer               :: pbuf_id,energy_size,i
+    !position of satellite
+    real(kind=8) :: shipx,shipy,shipz
+    real(kind=8) :: neighbour_thr,mass=1
+    !environment variables
+    character(len=100) :: env_shipy,env_shipz,env_neighbour_thr
 
 contains
 
     subroutine cotocoa_init
         pbuf_size=size(pbuf)
         !共有する配列の領域を確保
-        allocate(pbuf_data(pbuf_size,pbuf_mem))
+        allocate(dist(pbuf_size))
+        allocate(energy(pbuf_size))
         !エリアIDを取得
-        call CTCAR_regarea_real8(pbuf_data,pbuf_size*pbuf_mem,pbuf_id)
-        !get rank that sends request
-        !call get_environment_variable("FROM_RANK",env_from_rank)
-        !read(env_from_rank,*) from_rank
+        call CTCAR_regarea_real8(energy,pbuf_size,pbuf_id)
+
+        ! set parameters from environment variables
+        call get_environment_variable("SHIPY",env_shipy)
+        read(env_shipy,*) shipy
+        call get_environment_variable("SHIPZ",env_shipz)
+        read(env_shipz,*) shipz
+        call get_environment_variable("NEIGHBOUR_THR",        env_neighbour_thr)
+        read(env_neighbour_thr,*) neighbour_thr
     end subroutine cotocoa_init
 
     subroutine cotocoa_mainstep
         implicit none
-    
+
         !リクエストを送るときのデータ
         integer(kind=4) ::req_params(10)
 
-        from_rank=myid
-        !if(myid.eq.from_rank) then
-            !pbuf_posには位置情報を格納
-            pbuf_data(:,1)=pbuf(:)%x
-            pbuf_data(:,2)=pbuf(:)%y
-            pbuf_data(:,3)=pbuf(:)%z
-            pbuf_data(:,4)=pbuf(:)%vx
-            pbuf_data(:,5)=pbuf(:)%vy
-            pbuf_data(:,6)=pbuf(:)%vz
-            !print*, "requester: pbuf_vel=", pbuf_data(1:10,:)
-            print*, "CTCArequester: from_rank=", from_rank, " / istep=", istep,"pbuf=",pbuf_data(1,:)
-            !リクエスト時のデータを設定
-            req_params(1)=from_rank
-            req_params(2)=pbuf_size
-            req_params(3)=pbuf_mem
-            req_params(4)=istep
-            !リクエスト時にデータを送ることができる
-            call CTCAR_sendreq(req_params,size(req_params))
-        !end if
+        shipx=istep
+        dist(:)=sqrt((pbuf(:)%x-shipx)**2+(pbuf(:)%y-shipy)**2+(pbuf(:)%z-shipz)**2)
+        energy_size=0
+        do i=1, pbuf_size
+            if (dist(i).lt.neighbour_thr) then
+                energy_size=energy_size+1
+                energy(energy_size)=mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/2
+            end if
+        end do
+
+        !リクエスト時のデータを設定
+        req_params(1)=myid
+        req_params(2)=pbuf_size
+        req_params(3)=pbuf_mem
+        req_params(4)=istep
+        req_params(5)=energy_size
+        !リクエスト時にデータを送ることができる
+        call CTCAR_sendreq(req_params,size(req_params))
     
     end subroutine cotocoa_mainstep
 

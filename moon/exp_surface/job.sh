@@ -21,8 +21,7 @@ export EMSES_DEBUG=no
 export SHIPY=16
 export SHIPZ=256
 export NEIGHBOUR_THR=10
-export FROM_RANK=10
-export OUTPUT_FILE_NAME="output,sy=${SHIPY},sz=${SHIPZ},nt=${NEIGHBOUR_THR},fr=${FROM_RANK}"
+export OUTPUT_FILE_NAME="output,sy=${SHIPY},sz=${SHIPZ},nt=${NEIGHBOUR_THR}"
 export EXTENTION=".csv"
 
 # check if the output file exists

@@ -11,13 +11,8 @@ program worker
   !リクエストを受け取るときのデータ
   integer ::req_params(10)
   !受け取るデータとそのサイズ
-  real*8,allocatable    :: pbuf_data(:,:)
-  integer :: pbuf_size, pbuf_mem
-  !position of satellite
-  real(kind=8) :: shipx,shipy,shipz
-  real(kind=8) :: dist,neighbour_thr,mass=1,energy
-  !environment variables
-  character(len=100) :: env_shipy,env_shipz,env_neighbour_thr
+  real*8,allocatable    :: energy(:)
+  integer :: pbuf_size, pbuf_mem, energy_size=0
   !output file of energy
   character(len=100) :: output_file_name
   integer :: output_file_unit=10,particle_per_rank(130)
@@ -27,16 +22,6 @@ program worker
   call MPI_Comm_rank(CTCA_subcomm, myrank, ierr)
 !
   print*, "worker: ", myrank, " / ", nprocs
-! set parameters from environment variables
-  !shipy=5
-  call get_environment_variable("SHIPY",env_shipy)
-  read(env_shipy,*) shipy
-  !shipz=145
-  call get_environment_variable("SHIPZ",env_shipz)
-  read(env_shipz,*) shipz
-  !neighbour_thr=80
-  call get_environment_variable("NEIGHBOUR_THR",env_neighbour_thr)
-  read(env_neighbour_thr,*) neighbour_thr
   call get_environment_variable("OUTPUT_FILE_NAME",output_file_name)
 ! エリアIDを取得
   call CTCAW_regarea_real8(pbuf_id)
@@ -45,7 +30,6 @@ program worker
   write(output_file_unit,'(A)') "step,energy"
 !
   do while( .true. )
-    !step = step + 1
     !リクエストを受けとる
     call CTCAW_pollreq(from_rank,req_params,size(req_params))
     if( CTCAW_isfin() ) exit
@@ -54,29 +38,19 @@ program worker
     pbuf_size = req_params(2)
     pbuf_mem = req_params(3)
     step = req_params(4)
+    energy_size = req_params(5)
     !初回のみ領域確保
-    if(.not.allocated(pbuf_data)) then
-      allocate(pbuf_data(pbuf_size,pbuf_mem))
+    if(.not.allocated(energy)) then
+      allocate(energy(pbuf_size))
     end if
 
     !read_dataにデータを読み込む
-    call CTCAW_readarea_real8(pbuf_id,from_rank,0,pbuf_size*pbuf_mem,pbuf_data)
-
-    !position of satellite
-    shipx=step
+    call CTCAW_readarea_real8(pbuf_id,from_rank,0,energy_size,energy)
     
-    do i=1, pbuf_size
-      !check the distance between satellite and the object
-      dist=sqrt((pbuf_data(i,1)-shipx)**2+(pbuf_data(i,2)-shipy)**2+(pbuf_data(i,3)-shipz)**2)
-      if (dist.lt.neighbour_thr) then
-        !calculate the energy
-        energy=mass*0.5*(pbuf_data(i,4)**2+pbuf_data(i,5)**2+pbuf_data(i,6)**2)
-        particle_per_rank(from_rank)=particle_per_rank(from_rank)+1
-        write(output_file_unit,'(I,",",F)') step,energy
-      end if
+    do i=1, energy_size
+      write(output_file_unit,'(I,",",F)') step,energy(i)
     end do
-
-    print*, "CTCAworker: from_rank=", from_rank, " / step=", step,"pbuf=",pbuf_data(1,:)
+    particle_per_rank(from_rank) = particle_per_rank(from_rank) + energy_size
 
     call CTCAW_complete()
   end do
