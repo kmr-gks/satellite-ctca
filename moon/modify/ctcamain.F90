@@ -23,6 +23,14 @@ module m_ctcamain
 contains
 
     subroutine cotocoa_init
+        implicit none
+        !plasma frequency for ion (real unit)
+        real(kind=8) :: wp_ion_emses,wp_ion_real
+        real(kind=8) :: len_ratio,vel_ratio,time_ratio,freq_ratio,grid_length=0.5,ion_density
+        real(kind=8) :: ion_charge=1.60217662d-19,ion_mass=1.6726219d-27,permittivity=8.854187817d-12
+        real(kind=8) :: simu_vol,sup_par_mass
+        integer sup_par_num
+
         pbuf_size=size(pbuf)
         !共有する配列の領域を確保
         allocate(dist(pbuf_size))
@@ -35,8 +43,30 @@ contains
         read(env_shipy,*) shipy
         call get_environment_variable("SHIPZ",env_shipz)
         read(env_shipz,*) shipz
-        call get_environment_variable("NEIGHBOUR_THR",        env_neighbour_thr)
+        call get_environment_variable("NEIGHBOUR_THR",env_neighbour_thr)
         read(env_neighbour_thr,*) neighbour_thr
+
+        ! set plasma frequency for ion
+        wp_ion_emses=wp(2)
+        len_ratio=1/grid_length
+        vel_ratio=cv*1e3/2.99792458d8
+        time_ratio=len_ratio/vel_ratio
+        freq_ratio=1/time_ratio
+        wp_ion_real=wp_ion_emses/freq_ratio
+        ion_density=wp_ion_real**2*ion_mass*permittivity/ion_charge**2/1e6
+        simu_vol=nx*ny*nz*grid_length**3
+        !super particle number
+        sup_par_num=nodes(1)*nodes(2)*nodes(3)*pbuf_size
+        sup_par_mass=ion_mass*(simu_vol*1d6*ion_density/sup_par_num)
+        if (myid.eq.0) then
+            print *, "wp_ion_emses=",wp_ion_emses
+            print *, "wp_ion_real=",wp_ion_real,"[Hz]"
+            print *, "ion_density=",ion_density,"[/cc]"
+            print *, "simu_vol=",simu_vol,"[m^3]"
+            print *, "sup_par_num=",sup_par_num
+            print *, "sup_par_mass=",sup_par_mass,"[kg]"
+        end if
+
     end subroutine cotocoa_init
 
     subroutine cotocoa_mainstep
