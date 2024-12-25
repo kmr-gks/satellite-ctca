@@ -8,6 +8,9 @@ module m_ctcamain
     private
     public cotocoa_init, cotocoa_mainstep, cotocoa_finalize
 
+    real(kind=8) :: ion_charge=1.60217662d-19,ion_mass=1.6726219d-27,permittivity=8.854187817d-12
+    real(kind=8) :: len_ratio,vel_ratio,time_ratio,freq_ratio,ion_density
+
     !共有するphiの配列
     real(kind=8),allocatable :: dist(:),energy(:)
     !共有する配列のサイズ
@@ -16,7 +19,7 @@ module m_ctcamain
     integer               :: pbuf_id,energy_size,i
     !position of satellite
     real(kind=8) :: shipx,shipy,shipz
-    real(kind=8) :: neighbour_thr,mass=1
+    real(kind=8) :: neighbour_thr,sup_par_mass,grid_length=0.5,neighbour_vol
     !environment variables
     character(len=100) :: env_shipy,env_shipz,env_neighbour_thr
 
@@ -26,9 +29,7 @@ contains
         implicit none
         !plasma frequency for ion (real unit)
         real(kind=8) :: wp_ion_emses,wp_ion_real
-        real(kind=8) :: len_ratio,vel_ratio,time_ratio,freq_ratio,grid_length=0.5,ion_density
-        real(kind=8) :: ion_charge=1.60217662d-19,ion_mass=1.6726219d-27,permittivity=8.854187817d-12
-        real(kind=8) :: simu_vol,sup_par_mass
+        real(kind=8) :: simu_vol
         integer sup_par_num
 
         pbuf_size=size(pbuf)
@@ -58,6 +59,7 @@ contains
         !super particle number
         sup_par_num=nodes(1)*nodes(2)*nodes(3)*pbuf_size
         sup_par_mass=ion_mass*(simu_vol*1d6*ion_density/sup_par_num)
+        neighbour_vol=4/3*3.14159265*(neighbour_thr*grid_length)**3
         if (myid.eq.0) then
             print *, "wp_ion_emses=",wp_ion_emses
             print *, "wp_ion_real=",wp_ion_real,"[Hz]"
@@ -81,7 +83,8 @@ contains
         do i=1, pbuf_size
             if (dist(i).lt.neighbour_thr) then
                 energy_size=energy_size+1
-                energy(energy_size)=mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/2
+                !energy density(eV/cc)
+                energy(energy_size)=sup_par_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge/neighbour_vol
             end if
         end do
 

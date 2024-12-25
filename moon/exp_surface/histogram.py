@@ -15,9 +15,9 @@ plt.hist2d(df['step'], df['energy'], bins=log_bins, norm=LogNorm())
 title="Energy distribution"
 plt.title(title)
 plt.yscale('log')
-plt.colorbar(label='number of particles')
-plt.xlabel("x")
-plt.ylabel("energy")
+plt.colorbar(label='number of super particles')
+plt.xlabel("x[m]")
+plt.ylabel("energy density [eV/m^3]")
 
 file_name=file_name.replace('.csv','')
 plt.savefig(file_name+title, dpi=300)
