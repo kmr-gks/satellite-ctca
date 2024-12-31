@@ -16,6 +16,8 @@ program worker
   !output file of energy
   character(len=100) :: output_file_name
   integer :: output_file_unit=10,particle_per_rank(130)
+    integer date_time(8)
+    character(len=100) :: date_str(3)
 !
   call CTCAW_init(0, 1)
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
@@ -48,15 +50,16 @@ program worker
     !read energy from pbuf
     call CTCAW_readarea_real8(pbuf_id,from_rank,0,energy_size,energy)
     
-    do i=1, energy_size
-      write(output_file_unit,'(F,",",F)') satellite_pos,energy(i)
-    end do
+    write(output_file_unit, '( *(F,",",F,/) )') (satellite_pos, energy(i), i=1, energy_size)
+
     particle_per_rank(from_rank) = particle_per_rank(from_rank) + energy_size
 
     call CTCAW_complete()
   end do
   print*,particle_per_rank
   print*, "worker is finalizing..."
+  call date_and_time(date_str(1),date_str(2),date_str(3),date_time)
+   print '("worker: ",I4,"/",I2.2,"/",I2.2," ",I2.2,":",I2.2,":",I2.2)',date_time(1),date_time(2),date_time(3),date_time(5),date_time(6),date_time(7)
   call CTCAW_finalize()
   close(output_file_unit)
 !

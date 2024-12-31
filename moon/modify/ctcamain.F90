@@ -82,7 +82,7 @@ contains
         integer(kind=4) ::req_params(10)
 
         !set position of satellite
-        shipx=istep
+        shipx=istep/10
 
         dist(:)=sqrt((pbuf(:)%x-shipx)**2+(pbuf(:)%y-shipy)**2+(pbuf(:)%z-shipz)**2)
         
@@ -107,6 +107,12 @@ contains
     end subroutine cotocoa_mainstep
 
     subroutine cotocoa_finalize
+    integer date_time(8)
+    character(len=100) :: date_str(3)
+    if (myid.eq.0) then
+        call date_and_time(date_str(1),date_str(2),date_str(3),date_time)
+        print '("requester: ",I4,"/",I2.2,"/",I2.2," ",I2.2,":",I2.2,":",I2.2)',date_time(1),date_time(2),date_time(3),date_time(5),date_time(6),date_time(7)
+    end if
     
     end subroutine cotocoa_finalize
 

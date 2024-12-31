@@ -11,7 +11,7 @@
 
 &jobcon
     jobnum(1:2) = 0, 1
-    nstep = 10
+    nstep = 100
 /
 
 &digcon
