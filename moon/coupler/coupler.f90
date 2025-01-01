@@ -9,6 +9,7 @@ program coupler
   integer(kind=4) :: reqinf(4)
   integer(kind=4) :: frmrank, progid
   integer(kind=4) :: req_params(10)
+  integer :: flag_id,flag_size=1,flag(1)
 !
   call CTCAC_init_detail(1000, 100000, 1000, 80000, 10)
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
@@ -16,6 +17,7 @@ program coupler
 !
 ! エリアIDを取得
   call CTCAC_regarea_real8(phi_areaid)
+  call CTCAC_regarea_int(flag_id)
 !
   do while (.true.)
     call CTCAC_pollreq(reqinf,frmrank,req_params,size(req_params))

@@ -18,6 +18,8 @@ module m_ctcamain
     integer(kind=8)       :: pbuf_size, pbuf_mem=6
     !area id of pbuf, size of energy
     integer               :: pbuf_id,energy_size,i
+    !flag of completion
+    integer :: flag_id,flag_size=1,flag(1)
     !position of satellite
     real(kind=8) :: shipx,shipy,shipz
     !neighbour threshold, super particle mass, grid length, neighbour volume
@@ -40,6 +42,7 @@ contains
         allocate(dist(pbuf_size))
         allocate(energy(pbuf_size))
         call CTCAR_regarea_real8(energy,pbuf_size,pbuf_id)
+        call CTCAR_regarea_int(flag,flag_size,flag_id)
 
         ! set parameters from environment variables
         call get_environment_variable("SHIPY",env_shipy)
@@ -94,6 +97,7 @@ contains
                 energy(energy_size)=sup_par_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge/neighbour_vol
             end if
         end do
+        flag(1)=istep
 
         !set request data
         req_params(1)=myid

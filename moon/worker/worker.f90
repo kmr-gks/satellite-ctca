@@ -13,6 +13,8 @@ program worker
   real*8,allocatable    :: energy(:)
   integer :: pbuf_size, pbuf_mem, energy_size=0
   real(kind=8) :: satellite_pos, grid_length=0.5
+  !flag of completion
+  integer :: flag_id,flag_size=1,flag(1)
   !output file of energy
   character(len=100) :: output_file_name
   integer :: output_file_unit=10,particle_per_rank(130)
@@ -27,6 +29,7 @@ program worker
   call get_environment_variable("OUTPUT_FILE_NAME",output_file_name)
 ! get area id
   call CTCAW_regarea_real8(pbuf_id)
+  call CTCAW_regarea_int(flag_id)
   !open the output file
   open(unit=output_file_unit,file=output_file_name, status='replace', action='write')
   write(output_file_unit,'(A)') "step,energy"
@@ -49,6 +52,8 @@ program worker
 
     !read energy from pbuf
     call CTCAW_readarea_real8(pbuf_id,from_rank,0,energy_size,energy)
+    call CTCAW_readarea_int(flag_id,from_rank,0,flag_size,flag)
+    print*,"from_rank=",from_rank,"flag=",flag
     
     write(output_file_unit, '( *(F,",",F,/) )') (satellite_pos, energy(i), i=1, energy_size)
 
