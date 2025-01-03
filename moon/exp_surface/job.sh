@@ -50,7 +50,7 @@ if [ -f "$OUTPUT_FILE_NAME" ]; then
 	# ファイルサイズを取得 (バイト単位)
 	FILE_SIZE=$(stat -c%s "$OUTPUT_FILE_NAME")
 	if [ "$FILE_SIZE" -ge 1024 ]; then
-		echo "Running python script..."
+		echo "Running python script with $OUTPUT_FILE_NAME"
 		python histogram.py 
 	else
 		echo "Size of file '$OUTPUT_FILE_NAME' is too small."

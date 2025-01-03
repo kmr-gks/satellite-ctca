@@ -1,6 +1,24 @@
+module common_module
+    use iso_c_binding
+    implicit none
+
+    ! usleep関数のインターフェース
+    interface
+        subroutine usleep(microseconds) bind(C, name='usleep')
+            import :: C_INT
+            integer(C_INT), value :: microseconds
+        end subroutine usleep
+    end interface
+contains
+    subroutine mysleep(seconds)
+        real, intent(in) :: seconds
+        call usleep(int(seconds*1000000, C_INT))
+    end subroutine mysleep
+end module common_module
 program worker
   use mpi
   use ctca
+  use common_module
   implicit none
 !
   integer :: ierr, myrank, nprocs
@@ -50,15 +68,13 @@ program worker
     waiting_rank=0
     do from_rank=0,127
       call CTCAW_readarea_int(flag_id,from_rank,0,flag_size,flag)
-      !print*,"from_rank=",from_rank,"flag=",flag(1)
       if (flag(1).eq.0) then
         !write to csv
-        print*,"from_rank=",from_rank,"step=",flag(5)
+        !print*,"from_rank=",from_rank,"step=",flag(5)
         !read energy from pbuf
         step=flag(5)
         energy_size=flag(6)
         call CTCAW_readarea_real8(pbuf_id,from_rank,0,energy_size,energy)
-        !print*,"CTCAW_readarea_real8 pbuf_id"
         satellite_pos = step*grid_length
         write(output_file_unit, '( *(F,",",F,/) )') (satellite_pos, energy(i), i=1, energy_size)
         particle_per_rank(from_rank) = particle_per_rank(from_rank) + energy_size
@@ -66,20 +82,20 @@ program worker
         flag(1)=1
         !time up
         call CTCAW_writearea_int(flag_id,from_rank,0,flag_size,flag)
-        !print*,"CTCAW_writearea_int flag_id"
       else if (flag(1).eq.1) then
         !wait for requester
-        print*, "waiting for requester...", from_rank
+        print*, "wait for requester...", from_rank,"flag(1)",flag(1)
         waiting_rank=waiting_rank+1
       else if (flag(1).eq.2) then
         finished_rank=finished_rank+1
       end if
     end do
-    if (finished_rank.eq.128) then
+    if (finished_rank.gt.64) then
+      !if half of the ranks are finished, worker will exit
       exit
     end if
-    if (waiting_rank.gt.0) then
-      call sleep(1)
+    if (waiting_rank.eq.128) then
+      call mysleep(0.01)
     end if
   end do
   print*,particle_per_rank

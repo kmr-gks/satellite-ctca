@@ -1,7 +1,25 @@
+module common_module
+    use iso_c_binding
+    implicit none
+
+    ! usleep関数のインターフェース
+    interface
+        subroutine usleep(microseconds) bind(C, name='usleep')
+            import :: C_INT
+            integer(C_INT), value :: microseconds
+        end subroutine usleep
+    end interface
+contains
+    subroutine mysleep(seconds)
+        real, intent(in) :: seconds
+        call usleep(int(seconds*1000000, C_INT))
+    end subroutine mysleep
+end module common_module
 module m_ctcamain
     use oh_type
     use paramt
     use allcom
+    use common_module
 #define OH_LIB_LEVEL 3
 #include "ohhelp_f.h"
     implicit none
@@ -103,7 +121,7 @@ contains
                 !wait for worker
                 !print *, "wait for worker",myid
                 call MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, status1, status2, ierr)
-                call sleep(1)
+                call mysleep(0.01)
             else
                 exit
             end if
