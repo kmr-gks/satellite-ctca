@@ -19,13 +19,15 @@ module m_ctcamain
     !area id of pbuf, size of energy
     integer               :: pbuf_id,energy_size,i
     !flag of completion
-    integer :: flag_id,flag_size=1,flag(1)
+    integer :: flag_id,flag_size,flag(6)
     !position of satellite
     real(kind=8) :: shipx,shipy,shipz
     !neighbour threshold, super particle mass, grid length, neighbour volume
     real(kind=8) :: neighbour_thr,sup_par_mass,grid_length=0.5,neighbour_vol
     !environment variables
     character(len=100) :: env_shipy,env_shipz,env_neighbour_thr
+    !data for request
+    integer(kind=4) ::req_params(10)
 
 contains
 
@@ -39,6 +41,7 @@ contains
         integer sup_par_num
 
         pbuf_size=size(pbuf)
+        flag_size = size(flag)
         allocate(dist(pbuf_size))
         allocate(energy(pbuf_size))
         call CTCAR_regarea_real8(energy,pbuf_size,pbuf_id)
@@ -75,20 +78,38 @@ contains
             print *, "sup_par_num=",sup_par_num
             print *, "sup_par_mass=",sup_par_mass,"[kg]"
         end if
+        !send request
+        if (myid.eq.0) then
+            req_params(1)=pbuf_size
+            call CTCAR_sendreq(req_params,size(req_params))
+        end if
+        flag(1)=1
 
     end subroutine cotocoa_init
 
     subroutine cotocoa_mainstep
         implicit none
-
-        !data for request
-        integer(kind=4) ::req_params(10)
-
+        logical status1
+        integer status2(MPI_STATUS_SIZE),ierr
+        
         !set position of satellite
         shipx=istep/10
 
         dist(:)=sqrt((pbuf(:)%x-shipx)**2+(pbuf(:)%y-shipy)**2+(pbuf(:)%z-shipz)**2)
         
+        !check flag
+        do while (.true.)
+            if (flag(1).eq.0) then
+                !wait for worker
+                !print *, "wait for worker",myid
+                call MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, status1, status2, ierr)
+                call sleep(1)
+            else
+                exit
+            end if
+        end do
+
+        !calculate energy
         energy_size=0
         do i=1, pbuf_size
             if (dist(i).lt.neighbour_thr) then
@@ -97,22 +118,20 @@ contains
                 energy(energy_size)=sup_par_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge/neighbour_vol
             end if
         end do
-        flag(1)=istep
 
-        !set request data
-        req_params(1)=myid
-        req_params(2)=pbuf_size
-        req_params(3)=pbuf_mem
-        req_params(4)=istep
-        req_params(5)=energy_size
-        !send request
-        call CTCAR_sendreq(req_params,size(req_params))
-    
+        !set flag
+        flag(1)=0
+        flag(2)=myid
+        flag(3)=pbuf_size
+        flag(4)=pbuf_mem
+        flag(5)=istep
+        flag(6)=energy_size
     end subroutine cotocoa_mainstep
 
     subroutine cotocoa_finalize
     integer date_time(8)
     character(len=100) :: date_str(3)
+    flag(1)=2
     if (myid.eq.0) then
         call date_and_time(date_str(1),date_str(2),date_str(3),date_time)
         print '("requester: ",I4,"/",I2.2,"/",I2.2," ",I2.2,":",I2.2,":",I2.2)',date_time(1),date_time(2),date_time(3),date_time(5),date_time(6),date_time(7)

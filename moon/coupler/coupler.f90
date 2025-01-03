@@ -9,7 +9,7 @@ program coupler
   integer(kind=4) :: reqinf(4)
   integer(kind=4) :: frmrank, progid
   integer(kind=4) :: req_params(10)
-  integer :: flag_id,flag_size=1,flag(1)
+  integer :: flag_id
 !
   call CTCAC_init_detail(1000, 100000, 1000, 80000, 10)
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
