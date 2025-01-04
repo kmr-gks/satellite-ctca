@@ -23,12 +23,13 @@ program worker
 !
   integer :: ierr, myrank, nprocs
   !area id
-  integer :: pbuf_id
+  integer :: pbuf_id,species_id
   integer :: i,step=0
   integer :: from_rank
   !data for request
   integer ::req_params(10)
   real*8,allocatable    :: energy(:)
+  integer,allocatable    :: species(:)
   integer :: pbuf_size, pbuf_mem, energy_size=0
   real(kind=8) :: satellite_pos, grid_length=0.5
   !flag of completion
@@ -49,15 +50,17 @@ program worker
   call get_environment_variable("OUTPUT_FILE_NAME",output_file_name)
 ! get area id
   call CTCAW_regarea_real8(pbuf_id)
+  call CTCAW_regarea_int(species_id)
   call CTCAW_regarea_int(flag_id)
   !open the output file
   open(unit=output_file_unit,file=output_file_name, status='replace', action='write')
-  write(output_file_unit,'(A)') "step,energy"
+  write(output_file_unit,'(A)') "step,energy,species"
   !polling request
   call CTCAW_pollreq(from_rank,req_params,size(req_params))
   !allocate energy array
   if(.not.allocated(energy)) then
     allocate(energy(req_params(1)))
+    allocate(species(req_params(1)))
   end if
   call CTCAW_complete()
 !
@@ -75,8 +78,9 @@ program worker
         step=flag(5)
         energy_size=flag(6)
         call CTCAW_readarea_real8(pbuf_id,from_rank,0,energy_size,energy)
+        call CTCAW_readarea_int(species_id,from_rank,0,energy_size,species)
         satellite_pos = step*grid_length
-        write(output_file_unit, '( *(F,",",F,/) )') (satellite_pos, energy(i), i=1, energy_size)
+        write(output_file_unit, '( *(F,",",F,",",I,/) )') (satellite_pos, energy(i),species(i), i=1, energy_size)
         particle_per_rank(from_rank) = particle_per_rank(from_rank) + energy_size
         !set flag
         flag(1)=1

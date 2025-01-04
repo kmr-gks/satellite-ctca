@@ -32,10 +32,11 @@ module m_ctcamain
 
     !distance between satellite and particles, energy density
     real(kind=8),allocatable :: dist(:),energy(:)
+    integer,allocatable :: species(:)
     !size of pbuf,members of pbuf
     integer(kind=8)       :: pbuf_size, pbuf_mem=6
     !area id of pbuf, size of energy
-    integer               :: pbuf_id,energy_size,i
+    integer               :: pbuf_id,species_id,energy_size,i
     !flag of completion
     integer :: flag_id,flag_size,flag(6)
     !position of satellite
@@ -62,7 +63,9 @@ contains
         flag_size = size(flag)
         allocate(dist(pbuf_size))
         allocate(energy(pbuf_size))
+        allocate(species(pbuf_size))
         call CTCAR_regarea_real8(energy,pbuf_size,pbuf_id)
+        call CTCAR_regarea_int(species,pbuf_size,species_id)
         call CTCAR_regarea_int(flag,flag_size,flag_id)
 
         ! set parameters from environment variables
@@ -134,6 +137,7 @@ contains
                 energy_size=energy_size+1
                 !energy density(eV/cc)
                 energy(energy_size)=sup_par_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge/neighbour_vol
+                species(energy_size)=pbuf(i)%spec
             end if
         end do
 

@@ -5,7 +5,7 @@ program coupler
 !
   integer(kind=4) :: ierr, myrank, nprocs
   !エリアID
-  integer(kind=4) :: phi_areaid
+  integer(kind=4) :: phi_areaid,species_id
   integer(kind=4) :: reqinf(4)
   integer(kind=4) :: frmrank, progid
   integer(kind=4) :: req_params(10)
@@ -17,6 +17,7 @@ program coupler
 !
 ! エリアIDを取得
   call CTCAC_regarea_real8(phi_areaid)
+  call CTCAC_regarea_int(species_id)
   call CTCAC_regarea_int(flag_id)
 !
   do while (.true.)
