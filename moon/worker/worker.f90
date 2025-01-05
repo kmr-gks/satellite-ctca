@@ -28,10 +28,12 @@ program worker
   integer :: from_rank
   !data for request
   integer ::req_params(10)
+  real(kind=8) :: req_params_real(10)
   real*8,allocatable    :: energy(:)
   integer,allocatable    :: species(:)
   integer :: pbuf_size, pbuf_mem, energy_size=0
-  real(kind=8) :: satellite_pos, grid_length=0.5
+  !time is real unit
+  real(kind=8) :: grid_length=0.5,time_ratio,time
   !flag of completion
   integer :: flag_id,flag_size,flag(6)
   !output file of energy
@@ -54,9 +56,11 @@ program worker
   call CTCAW_regarea_int(flag_id)
   !open the output file
   open(unit=output_file_unit,file=output_file_name, status='replace', action='write')
-  write(output_file_unit,'(A)') "step,energy,species"
+  write(output_file_unit,'(A)') "time,energy,species"
   !polling request
-  call CTCAW_pollreq(from_rank,req_params,size(req_params))
+  call ctcaw_pollreq_withreal8(from_rank,req_params,size(req_params),req_params_real,size(req_params_real))
+  print*,"req_params_real(1)=",req_params_real(1)
+  time_ratio=req_params_real(1)
   !allocate energy array
   if(.not.allocated(energy)) then
     allocate(energy(req_params(1)))
@@ -76,11 +80,12 @@ program worker
         !print*,"from_rank=",from_rank,"step=",flag(5)
         !read energy from pbuf
         step=flag(5)
+        time=step/time_ratio
         energy_size=flag(6)
+
         call CTCAW_readarea_real8(pbuf_id,from_rank,0,energy_size,energy)
         call CTCAW_readarea_int(species_id,from_rank,0,energy_size,species)
-        satellite_pos = step*grid_length
-        write(output_file_unit, '( *(F,",",F,",",I,/) )') (satellite_pos, energy(i),species(i), i=1, energy_size)
+        write(output_file_unit, '( *(F,",",F,",",I,/) )') (time,energy(i),species(i),i=1,energy_size)
         particle_per_rank(from_rank) = particle_per_rank(from_rank) + energy_size
         !set flag
         flag(1)=1
@@ -88,7 +93,6 @@ program worker
         call CTCAW_writearea_int(flag_id,from_rank,0,flag_size,flag)
       else if (flag(1).eq.1) then
         !wait for requester
-        print*, "wait for requester...", from_rank,"flag(1)",flag(1)
         waiting_rank=waiting_rank+1
       else if (flag(1).eq.2) then
         finished_rank=finished_rank+1

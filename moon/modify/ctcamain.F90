@@ -39,7 +39,7 @@ module m_ctcamain
     integer               :: pbuf_id,species_id,energy_size,i
     !flag of completion
     integer :: flag_id,flag_size,flag(6)
-    !position of satellite
+    !position of satellite (emses unit)
     real(kind=8) :: shipx,shipy,shipz
     !neighbour threshold, super particle mass, grid length, neighbour volume
     real(kind=8) :: neighbour_thr,sup_par_mass,grid_length=0.5,neighbour_vol
@@ -47,6 +47,7 @@ module m_ctcamain
     character(len=100) :: env_shipy,env_shipz,env_neighbour_thr
     !data for request
     integer(kind=4) ::req_params(10)
+    real(kind=8) :: req_params_real(10)
 
 contains
 
@@ -102,7 +103,9 @@ contains
         !send request
         if (myid.eq.0) then
             req_params(1)=pbuf_size
-            call CTCAR_sendreq(req_params,size(req_params))
+            req_params_real(1)=time_ratio
+            print*,"req_params_real(1)=",req_params_real(1)
+            call CTCAR_sendreq_withreal8(req_params,size(req_params),req_params_real,size(req_params_real))
         end if
         flag(1)=1
 
@@ -135,8 +138,10 @@ contains
         do i=1, pbuf_size
             if (dist(i).lt.neighbour_thr) then
                 energy_size=energy_size+1
+                !energy(eV)
+                energy(energy_size)=sup_par_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
                 !energy density(eV/cc)
-                energy(energy_size)=sup_par_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge/neighbour_vol
+                !energy(energy_size)=sup_par_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge/neighbour_vol
                 species(energy_size)=pbuf(i)%spec
             end if
         end do
