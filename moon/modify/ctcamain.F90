@@ -25,8 +25,8 @@ module m_ctcamain
     implicit none
     private
     public cotocoa_init, cotocoa_mainstep, cotocoa_finalize
-    !elementary charge[C], ion mass[kg], permittivity of vacuum[F/m]
-    real(kind=8) :: ion_charge=1.6021766d-19,ion_mass=1.6726219d-27,permittivity=8.85418781d-12
+    !elementary charge[C], ion mass[kg], electron mass[kg], permittivity of vacuum[F/m]
+    real(kind=8) :: ion_charge=1.6021766d-19,ion_mass=1.6726219d-27,electron_mass=9.109383d-31,permittivity=8.85418781d-12
     !ratio of emses to real unit, ion density[/cc]
     real(kind=8) :: len_ratio,vel_ratio,time_ratio,freq_ratio,ion_density
 
@@ -58,7 +58,7 @@ contains
         !simulation volume
         real(kind=8) :: simu_vol
         !number of super particles
-        integer sup_par_num
+        integer sup_par_num,real_par_num_per_sup_par
 
         pbuf_size=size(pbuf)
         flag_size = size(flag)
@@ -90,7 +90,8 @@ contains
         simu_vol=nx*ny*nz*grid_length**3
 
         sup_par_num=nodes(1)*nodes(2)*nodes(3)*pbuf_size
-        sup_par_mass=ion_mass*(simu_vol*1d6*ion_density/sup_par_num)
+        real_par_num_per_sup_par=simu_vol*1d6*ion_density/sup_par_num
+        sup_par_mass=ion_mass*real_par_num_per_sup_par
         neighbour_vol=4/3*pi*(neighbour_thr*grid_length)**3
         if (myid.eq.0) then
             print *, "wp_ion_emses=",wp_ion_emses
@@ -98,6 +99,7 @@ contains
             print *, "ion_density=",ion_density,"[/cc]"
             print *, "simu_vol=",simu_vol,"[m^3]"
             print *, "sup_par_num=",sup_par_num
+            print *, "real_par_num_per_sup_par=",real_par_num_per_sup_par,"[1]"
             print *, "sup_par_mass=",sup_par_mass,"[kg]"
         end if
         !send request
@@ -138,11 +140,15 @@ contains
         do i=1, pbuf_size
             if (dist(i).lt.neighbour_thr) then
                 energy_size=energy_size+1
-                !energy(eV)
-                energy(energy_size)=sup_par_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
-                !energy density(eV/cc)
-                !energy(energy_size)=sup_par_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge/neighbour_vol
                 species(energy_size)=pbuf(i)%spec
+                !energy(eV)
+                if (species(energy_size).eq.1) then
+                    energy(energy_size)=electron_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
+                else
+                    energy(energy_size)=ion_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
+                end if
+                !energy density(eV/cc)
+                !energy(energy_size)=energy(energy_size)/neighbour_vol
             end if
         end do
 
