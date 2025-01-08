@@ -4,6 +4,8 @@
 #SBATCH -t 168:00:00
 #SBATCH -o %x.%j.out
 
+#gr10451a or gr20001a
+
 # 標準出力と標準エラー出力をリダイレクト
 exec 2>&1
 
