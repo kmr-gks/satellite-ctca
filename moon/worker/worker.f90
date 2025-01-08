@@ -24,7 +24,7 @@ program worker
   integer :: ierr, myrank, nprocs
   !area id
   integer :: pbuf_id,species_id
-  integer :: i,step=0
+  integer :: i,j,k,step=0
   integer :: from_rank
   !data for request
   integer ::req_params(10)
@@ -42,6 +42,8 @@ program worker
     integer date_time(8)
     character(len=100) :: date_str(3)
   integer finished_rank,waiting_rank
+  !number of super particles per time(sec), energy(log10 eV), and species(1or2)
+  integer :: num_par(-100:100,2),num_par_id,num_par_total(-100:100,2,100)
 !
   call CTCAW_init(0, 1)
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
@@ -54,9 +56,10 @@ program worker
   call CTCAW_regarea_real8(pbuf_id)
   call CTCAW_regarea_int(species_id)
   call CTCAW_regarea_int(flag_id)
+  call CTCAW_regarea_int(num_par_id)
   !open the output file
-  open(unit=output_file_unit,file=output_file_name, status='replace', action='write')
-  write(output_file_unit,'(A)') "time,energy,species"
+  open(unit=output_file_unit,file=output_file_name, status='replace', action='write',buffered='yes')
+  write(output_file_unit,'(A)') "time-step,species,energy(10*log10eV),sup-par-count"
   !polling request
   call ctcaw_pollreq_withreal8(from_rank,req_params,size(req_params),req_params_real,size(req_params_real))
   print*,"req_params_real(1)=",req_params_real(1)
@@ -65,6 +68,7 @@ program worker
   if(.not.allocated(energy)) then
     allocate(energy(req_params(1)))
     allocate(species(req_params(1)))
+    num_par_total=0
   end if
   call CTCAW_complete()
 !
@@ -83,14 +87,13 @@ program worker
         time=step/time_ratio
         energy_size=flag(6)
 
-        call CTCAW_readarea_real8(pbuf_id,from_rank,0,energy_size,energy)
-        call CTCAW_readarea_int(species_id,from_rank,0,energy_size,species)
-        write(output_file_unit, '( *(F,",",F,",",I,/) )') (time,energy(i),species(i),i=1,energy_size)
+        call CTCAW_readarea_int(num_par_id,from_rank,0,size(num_par),num_par)
         particle_per_rank(from_rank) = particle_per_rank(from_rank) + energy_size
         !set flag
         flag(1)=1
         !time up
         call CTCAW_writearea_int(flag_id,from_rank,0,flag_size,flag)
+        num_par_total(:,:,step)=num_par_total(:,:,step)+num_par(:,:)
       else if (flag(1).eq.1) then
         !wait for requester
         waiting_rank=waiting_rank+1
@@ -107,9 +110,10 @@ program worker
     end if
   end do
   print*,particle_per_rank
-  print*, "worker is finalizing..."
-  call date_and_time(date_str(1),date_str(2),date_str(3),date_time)
-   print '("worker: ",I4,"/",I2.2,"/",I2.2," ",I2.2,":",I2.2,":",I2.2)',date_time(1),date_time(2),date_time(3),date_time(5),date_time(6),date_time(7)
+  print*, "worker is writing data to file"
+  call system("date")
+  write(output_file_unit, '( *(I4, ",", I4, ",", I4, ",", I8, /) )') (( (i, j, k, num_par_total(k, j, i), k = -100, 100), j = 1, 2), i = 1, 100)
+  call system("date")
   call CTCAW_finalize()
   close(output_file_unit)
 !

@@ -30,22 +30,19 @@ def save_hist2d(df, x, y, bins, title, xlabel, ylabel, file_name):
 	plt.legend()
 	plt.savefig(file_name, dpi=300)
 
-#file_name = os.environ["OUTPUT_FILE_NAME"]
-file_name="output,sy=16,sz=256,nt=10_12.csv"
+file_name = os.environ["OUTPUT_FILE_NAME"]
+#file_name="output,sy=16,sz=256,nt=10_12.csv"
 real_par_num_per_sup_par=13020
 
 #load data from file
 df=pd.read_csv(file_name)
 
-log_bins=[len(df['time'].value_counts()), np.logspace(np.log10(df['energy'].min()),np.log10(df['energy'].max()), num=50)]
-hist,xedges,yedges =np.histogram2d(df['time'], df['energy'], bins=log_bins)
-vmin, vmax = hist.min(), hist.max()
+#csv data is binned by time-step and energy, so we can use pivot_table to create a 2D histogram
+hist_data = df.pivot_table(index='energy(10*log10eV)', columns='time-step', values='sup-par-count', aggfunc='sum', fill_value=0)
 
-#plot histogram of electron energy
-save_hist2d(df[df['species']==1], 'time', 'energy', log_bins, "Energy distribution (electron)", "time[sec]", "energy [eV]", file_name.replace('.csv','')+"Energy distribution (electron)")
+plt.imshow(hist_data, aspect='auto', origin='lower', extent=[1, 100, -100, 100], norm=LogNorm())
 
-#plot histogram of ion energy
-save_hist2d(df[df['species']==2], 'time', 'energy', log_bins, "Energy distribution (ion)", "time[sec]", "energy [eV]", file_name.replace('.csv','')+"Energy distribution (ion)")
-
-#plot histogram of all particles energy
-save_hist2d(df, 'time', 'energy', log_bins, "Energy distribution (all particles)", "time[sec]", "energy [eV]", file_name.replace('.csv','')+"Energy distribution (all particles)")
+plt.colorbar(label='Particle Count')
+plt.xlabel('Time-step')
+plt.ylabel('Energy (10 * log10 eV)')
+plt.savefig("out.png", dpi=300)

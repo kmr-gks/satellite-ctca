@@ -49,7 +49,7 @@ module m_ctcamain
     integer(kind=4) ::req_params(10)
     real(kind=8) :: req_params_real(10)
     !number of super particles per energy(10*log10eV), and species(1or2)
-    integer :: num_par(-100:100,2)
+    integer :: num_par(-100:100,2),num_par_id
 
 contains
 
@@ -70,6 +70,7 @@ contains
         call CTCAR_regarea_real8(energy,pbuf_size,pbuf_id)
         call CTCAR_regarea_int(species,pbuf_size,species_id)
         call CTCAR_regarea_int(flag,flag_size,flag_id)
+        call CTCAR_regarea_int(num_par,size(num_par),num_par_id)
 
         ! set parameters from environment variables
         call get_environment_variable("SHIPY",env_shipy)
@@ -156,7 +157,7 @@ contains
                 num_par(energy_index,species(energy_size))=num_par(energy_index,species(energy_size))+1
             end if
         end do
-        if (myid.eq.0) then
+        if (myid.eq.0.and..false.) then
             print *, "istep=",istep
             do i=-100,100
                 do j=1,2
@@ -180,11 +181,7 @@ contains
     integer date_time(8)
     character(len=100) :: date_str(3)
     flag(1)=2
-    if (myid.eq.0) then
-        call date_and_time(date_str(1),date_str(2),date_str(3),date_time)
-        print '("requester: ",I4,"/",I2.2,"/",I2.2," ",I2.2,":",I2.2,":",I2.2)',date_time(1),date_time(2),date_time(3),date_time(5),date_time(6),date_time(7)
-    end if
-    
+    if (myid.eq.0) print *, "requester finished:",myid
     end subroutine cotocoa_finalize
 
 end module m_ctcamain
