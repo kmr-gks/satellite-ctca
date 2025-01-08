@@ -24,6 +24,7 @@ export SHIPY=16
 export SHIPZ=256
 export NEIGHBOUR_THR=10
 export OUTPUT_FILE_NAME="output,sy=${SHIPY},sz=${SHIPZ},nt=${NEIGHBOUR_THR}"
+export JOB_OUT_FILE="job.sh.${SLURM_JOB_ID}.out"
 export EXTENTION=".csv"
 
 # check if the output file exists
@@ -40,7 +41,6 @@ echo "output file: $OUTPUT_FILE_NAME"
 date
 
 rm *_0000.h5
-#dont use sbatch, use mysbatch and njob.sh instead
 srun -l --multi-prog multi.conf
 date
 

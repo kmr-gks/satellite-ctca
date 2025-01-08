@@ -3,6 +3,7 @@ from matplotlib.colors import LogNorm
 import pandas as pd
 import numpy as np
 import os
+import re
 
 def save_hist2d(df, title, file_name):
 	plt.clf()
@@ -18,11 +19,20 @@ def save_hist2d(df, title, file_name):
 
 file_name = os.environ["OUTPUT_FILE_NAME"]
 #file_name="output,sy=16,sz=256,nt=10_9.csv"
-real_par_num_per_sup_par=13020
 colorbar_label='number of actual particles'
 xlabel='Time-step'
 ylabel='Energy (10 * log10 eV)'
 output_file_name = file_name.replace('.csv','')+"Energy distribution"
+
+#find real_par_num_per_sup_par from job output (JOB_OUT_FILE)
+pattern = r'real_par_num_per_sup_par=\s+(\d+)'
+with open(os.environ["JOB_OUT_FILE"], 'r') as f:
+#with open("job.sh.3610830.out", 'r') as f:
+	for line in f:
+		match = re.search(pattern, line)
+		if match:
+			real_par_num_per_sup_par = int(match.group(1))
+			break
 
 #load data from file
 df_all=pd.read_csv(file_name)
@@ -35,6 +45,8 @@ energy_min = df_non0['energy(10*log10eV)'].min()
 energy_max = df_non0['energy(10*log10eV)'].max()
 #filter data to only include the range of interest
 df_all=df_all[(df_all['time-step'] >= time_min) & (df_all['time-step'] <= time_max) & (df_all['energy(10*log10eV)'] >= energy_min) & (df_all['energy(10*log10eV)'] <= energy_max)]
+#multiply sup-par-count by real_par_num_per_sup_par
+df_all['sup-par-count'] = df_all['sup-par-count'] * real_par_num_per_sup_par
 #split data by species
 df_ele=df_all[df_all['species'] == 1]
 df_ion=df_all[df_all['species'] == 2]
