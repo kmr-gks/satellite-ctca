@@ -48,6 +48,8 @@ module m_ctcamain
     !data for request
     integer(kind=4) ::req_params(10)
     real(kind=8) :: req_params_real(10)
+    !number of super particles per energy(10*log10eV), and species(1or2)
+    integer :: num_par(-100:100,2)
 
 contains
 
@@ -117,7 +119,10 @@ contains
         implicit none
         logical status1
         integer status2(MPI_STATUS_SIZE),ierr
+        integer energy_index,j
         
+        num_par(:,:)=0
+
         !set position of satellite
         shipx=istep/10
 
@@ -147,10 +152,20 @@ contains
                 else
                     energy(energy_size)=ion_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
                 end if
-                !energy density(eV/cc)
-                !energy(energy_size)=energy(energy_size)/neighbour_vol
+                energy_index=int(10*log10(energy(energy_size)))
+                num_par(energy_index,species(energy_size))=num_par(energy_index,species(energy_size))+1
             end if
         end do
+        if (myid.eq.0) then
+            print *, "istep=",istep
+            do i=-100,100
+                do j=1,2
+                    if (num_par(i,j).ne.0) then
+                        print *, "energy=",i,"[10log10eV], species=",j,", num_par=",num_par(i,j)
+                    end if
+                end do
+            end do
+        end if
 
         !set flag
         flag(1)=0
