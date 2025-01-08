@@ -30,8 +30,7 @@ def save_hist2d(df, x, y, bins, title, xlabel, ylabel, file_name):
 	plt.legend()
 	plt.savefig(file_name, dpi=300)
 
-#file_name = os.environ["OUTPUT_FILE_NAME"]
-file_name="output,sy=16,sz=256,nt=10_12.csv"
+file_name = os.environ["OUTPUT_FILE_NAME"]
 real_par_num_per_sup_par=13020
 
 #load data from file
