@@ -108,6 +108,10 @@ contains
         !send request
         if (myid.eq.0) then
             req_params(1)=pbuf_size
+            req_params(2)=lbound(num_par, 1)
+            req_params(3)=ubound(num_par, 1)
+            req_params(4)=size(num_par, 2)
+            req_params(5)=nstep
             req_params_real(1)=time_ratio
             print*,"req_params_real(1)=",req_params_real(1)
             call CTCAR_sendreq_withreal8(req_params,size(req_params),req_params_real,size(req_params_real))
@@ -153,8 +157,12 @@ contains
                 else
                     energy(energy_size)=ion_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
                 end if
+                !check energy
                 if (energy(energy_size).gt.0) then
                     energy_index=int(10*log10(energy(energy_size)))
+                    !check boundary
+                    energy_index=max(energy_index,lbound(num_par, 1))
+                    energy_index=min(energy_index,ubound(num_par, 1))
                     num_par(energy_index,species(energy_size))=num_par(energy_index,species(energy_size))+1
                 end if
             end if

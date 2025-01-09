@@ -43,7 +43,8 @@ program worker
     character(len=100) :: date_str(3)
   integer finished_rank,waiting_rank
   !number of super particles per time(sec), energy(log10 eV), and species(1or2)
-  integer :: num_par(-100:100,2),num_par_id,num_par_total(-100:100,2,100)
+  integer,allocatable    :: num_par(:,:),num_par_total(:,:,:)
+  integer num_par_id,energy_min,energy_max,nspecies,nstep
 !
   call CTCAW_init(0, 1)
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
@@ -68,6 +69,12 @@ program worker
   if(.not.allocated(energy)) then
     allocate(energy(req_params(1)))
     allocate(species(req_params(1)))
+    energy_min=req_params(2)
+    energy_max=req_params(3)
+    nspecies=req_params(4)
+    nstep=req_params(5)
+    allocate(num_par(energy_min:energy_max,nspecies))
+    allocate(num_par_total(energy_min:energy_max,nspecies,nstep))
     num_par_total=0
   end if
   call CTCAW_complete()
@@ -112,7 +119,7 @@ program worker
   print*,particle_per_rank
   print*, "worker is writing data to file"
   call system("date")
-  write(output_file_unit, '( *(I4, ",", I4, ",", I4, ",", I8, /) )') (( (i, j, k, num_par_total(k, j, i), k = -100, 100), j = 1, 2), i = 1, 100)
+  write(output_file_unit, '( *(I4, ",", I4, ",", I4, ",", I8, /) )') (( (i, j, k, num_par_total(k, j, i), k = energy_min, energy_max), j = 1, nspecies), i = 1, nstep)
   call system("date")
   call CTCAW_finalize()
   close(output_file_unit)
