@@ -1,9 +1,14 @@
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
+from matplotlib.ticker import FuncFormatter
 import pandas as pd
 import numpy as np
 import os
 import re
+
+# custom formatter for y-axis
+def log_formatter(value, tick_number):
+    return f"$10^{{{int(value/10)}}}$"
 
 def save_hist2d(df, title, file_name):
 	plt.clf()
@@ -15,13 +20,15 @@ def save_hist2d(df, title, file_name):
 	plt.title(title)
 	plt.xlabel(xlabel)
 	plt.ylabel(ylabel)
+	#set log10 scale for energy
+	plt.gca().yaxis.set_major_formatter(FuncFormatter(log_formatter))
 	plt.savefig(file_name, dpi=300)
 
 file_name = os.environ["OUTPUT_FILE_NAME"]
 #file_name="output,sy=16,sz=256,nt=10_9.csv"
 colorbar_label='number of actual particles'
 xlabel='Time-step'
-ylabel='Energy (10 * log10 eV)'
+ylabel='Energy [eV]'
 output_file_name = file_name.replace('.csv','')+"Energy distribution"
 
 #load data from file
