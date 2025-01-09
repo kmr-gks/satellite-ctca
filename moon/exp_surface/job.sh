@@ -1,8 +1,10 @@
 #!/bin/bash
-#SBATCH -p gr20001a
+#SBATCH -p gr10451a
 #SBATCH --rsc p=130:t=1:c=1
 #SBATCH -t 168:00:00
 #SBATCH -o %x.%j.out
+
+#gr10451a or gr20001a
 
 # 標準出力と標準エラー出力をリダイレクト
 exec 2>&1
@@ -18,16 +20,27 @@ module load hdf5/1.12.2_intel-2022.3-impi
 #set environment variables
 export EMSES_DEBUG=no
 
-export SHIPY=5
-export SHIPZ=145
-export NEIGHBOUR_THR=80
-export FROM_RANK=10
-export OUTPUT_FILE_NAME="output,sy=${SHIPY},sz=${SHIPZ},nt=${NEIGHBOUR_THR},fr=${FROM_RANK}.csv"
+export SHIPY=16
+export SHIPZ=256
+export NEIGHBOUR_THR=10
+export OUTPUT_FILE_NAME="output,sy=${SHIPY},sz=${SHIPZ},nt=${NEIGHBOUR_THR}"
+export JOB_OUT_FILE="job.sh.${SLURM_JOB_ID}.out"
+export EXTENTION=".csv"
+
+# check if the output file exists
+NEW_FILE_NAME="${OUTPUT_FILE_NAME}${EXTENTION}"
+COUNTER=0
+while [ -f "$NEW_FILE_NAME" ]; do
+	COUNTER=$((COUNTER+1))
+	NEW_FILE_NAME="${OUTPUT_FILE_NAME}_${COUNTER}${EXTENTION}"
+done
+
+OUTPUT_FILE_NAME="${NEW_FILE_NAME}"
+echo "output file: $OUTPUT_FILE_NAME"
 
 date
 
 rm *_0000.h5
-#dont use sbatch, use mysbatch and njob.sh instead
 srun -l --multi-prog multi.conf
 date
 
@@ -39,7 +52,7 @@ if [ -f "$OUTPUT_FILE_NAME" ]; then
 	# ファイルサイズを取得 (バイト単位)
 	FILE_SIZE=$(stat -c%s "$OUTPUT_FILE_NAME")
 	if [ "$FILE_SIZE" -ge 1024 ]; then
-		echo "Running python script..."
+		echo "Running python script with $OUTPUT_FILE_NAME"
 		python histogram.py 
 	else
 		echo "Size of file '$OUTPUT_FILE_NAME' is too small."
