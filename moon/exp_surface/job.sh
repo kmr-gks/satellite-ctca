@@ -23,7 +23,8 @@ export EMSES_DEBUG=no
 export SHIPY=16
 export SHIPZ=256
 export NEIGHBOUR_THR=10
-export OUTPUT_FILE_NAME="output,sy=${SHIPY},sz=${SHIPZ},nt=${NEIGHBOUR_THR}"
+#for python script after simulation
+export OUTPUT_FILE_NAME="y${SHIPY},z${SHIPZ},t${NEIGHBOUR_THR}"
 export JOB_OUT_FILE="job.sh.${SLURM_JOB_ID}.out"
 export EXTENTION=".csv"
 
