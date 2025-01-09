@@ -31,8 +31,7 @@ module m_ctcamain
     real(kind=8) :: len_ratio,vel_ratio,time_ratio,freq_ratio,ion_density
 
     !distance between satellite and particles, energy density
-    real(kind=8),allocatable :: dist(:),energy(:)
-    integer,allocatable :: species(:)
+    real(kind=8),allocatable :: dist(:)
     !size of pbuf,members of pbuf
     integer(kind=8)       :: pbuf_size, pbuf_mem=6
     !area id of pbuf, size of energy
@@ -66,12 +65,8 @@ contains
         pbuf_size=size(pbuf)
         flag_size = size(flag)
         allocate(dist(pbuf_size))
-        allocate(energy(pbuf_size))
-        allocate(species(pbuf_size))
         allocate(num_par(-energy_bin:energy_bin,spec_num))
         allocate(num_par_v(-energy_bin:energy_bin,v_dim,spec_num))
-        call CTCAR_regarea_real8(energy,pbuf_size,pbuf_id)
-        call CTCAR_regarea_int(species,pbuf_size,species_id)
         call CTCAR_regarea_int(flag,flag_size,flag_id)
         call CTCAR_regarea_int(num_par,size(num_par),num_par_id)
         call CTCAR_regarea_int(num_par_v,size(num_par_v),num_par_v_id)
@@ -130,8 +125,8 @@ contains
         implicit none
         logical status1
         integer status2(MPI_STATUS_SIZE),ierr
-        integer energy_index,j
-        real(kind=8) :: v(v_dim)
+        integer energy_index,j,species
+        real(kind=8) :: v(v_dim),energy
         
         num_par(:,:)=0
         num_par_v(:,:,:)=0
@@ -158,23 +153,23 @@ contains
         do i=1, pbuf_size
             if (dist(i).lt.neighbour_thr) then
                 energy_size=energy_size+1
-                species(energy_size)=pbuf(i)%spec
+                species=pbuf(i)%spec
                 !energy(eV)
-                if (species(energy_size).eq.1) then
-                    energy(energy_size)=electron_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
+                if (species.eq.1) then
+                    energy=electron_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
                 else
-                    energy(energy_size)=ion_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
+                    energy=ion_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
                 end if
                 v(1)=abs(pbuf(i)%vx)/vel_ratio
                 v(2)=abs(pbuf(i)%vy)/vel_ratio
                 v(3)=abs(pbuf(i)%vz)/vel_ratio
                 !check energy
-                if (energy(energy_size).gt.0) then
-                    energy_index=int(10*log10(energy(energy_size)))
+                if (energy.gt.0) then
+                    energy_index=int(10*log10(energy))
                     !check boundary
                     energy_index=max(energy_index,lbound(num_par, 1))
                     energy_index=min(energy_index,ubound(num_par, 1))
-                    num_par(energy_index,species(energy_size))=num_par(energy_index,species(energy_size))+1
+                    num_par(energy_index,species)=num_par(energy_index,species)+1
                 end if
                 do j=1,v_dim
                     if (v(j).gt.0) then
@@ -182,7 +177,7 @@ contains
                         !check boundary
                         energy_index=max(energy_index,lbound(num_par_v, 1))
                         energy_index=min(energy_index,ubound(num_par_v, 1))
-                        num_par_v(energy_index,j,species(energy_size))=num_par_v(energy_index,j,species(energy_size))+1
+                        num_par_v(energy_index,j,species)=num_par_v(energy_index,j,species)+1
                     end if
                 end do
             end if

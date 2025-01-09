@@ -23,22 +23,19 @@ program worker
 !
   integer :: ierr, myrank, nprocs
   !area id
-  integer :: pbuf_id,species_id
   integer :: i,j,k,l,step=0
   integer :: from_rank
   !data for request
   integer ::req_params(10)
   real(kind=8) :: req_params_real(10)
-  real*8,allocatable    :: energy(:)
-  integer,allocatable    :: species(:)
-  integer :: pbuf_size, pbuf_mem, energy_size=0,real_par_num_per_sup_par
+  integer :: pbuf_size, pbuf_mem, real_par_num_per_sup_par
   !time is real unit
   real(kind=8) :: grid_length=0.5,time_ratio,time
   !flag of completion
   integer :: flag_id,flag_size,flag(10)
   !output file of energy
   character(len=100) :: output_file_name
-  integer :: output_file_unit=10,particle_per_rank(130)
+  integer :: output_file_unit=10
     integer date_time(8)
     character(len=100) :: date_str(3)
   integer finished_rank,waiting_rank
@@ -55,8 +52,6 @@ program worker
   print*, "worker: ", myrank, " / ", nprocs
   call get_environment_variable("OUTPUT_FILE_NAME",output_file_name)
 ! get area id
-  call CTCAW_regarea_real8(pbuf_id)
-  call CTCAW_regarea_int(species_id)
   call CTCAW_regarea_int(flag_id)
   call CTCAW_regarea_int(num_par_id)
   call CTCAW_regarea_int(num_par_v_id)
@@ -68,21 +63,17 @@ program worker
   print*,"req_params_real(1)=",req_params_real(1)
   time_ratio=req_params_real(1)
   !allocate energy array
-  if(.not.allocated(energy)) then
-    allocate(energy(req_params(1)))
-    allocate(species(req_params(1)))
-    energy_bin=req_params(3)
-    spec_num=req_params(4)
-    nstep=req_params(5)
-    real_par_num_per_sup_par=req_params(6)
-    v_dim=req_params(7)
-    allocate(num_par(-energy_bin:energy_bin,spec_num))
-    allocate(num_par_total(-energy_bin:energy_bin,spec_num,nstep))
-    num_par_total=0
-    allocate(num_par_v(-energy_bin:energy_bin,v_dim,spec_num))
-    allocate(num_par_v_total(-energy_bin:energy_bin,v_dim,spec_num,nstep))
-    num_par_v_total=0
-  end if
+   energy_bin=req_params(3)
+  spec_num=req_params(4)
+  nstep=req_params(5)
+  real_par_num_per_sup_par=req_params(6)
+  v_dim=req_params(7)
+  allocate(num_par(-energy_bin:energy_bin,spec_num))
+  allocate(num_par_total(-energy_bin:energy_bin,spec_num,nstep))
+  num_par_total=0
+  allocate(num_par_v(-energy_bin:energy_bin,v_dim,spec_num))
+  allocate(num_par_v_total(-energy_bin:energy_bin,v_dim,spec_num,nstep))
+  num_par_v_total=0
   call CTCAW_complete()
 !
   do while( .true. )
@@ -98,11 +89,9 @@ program worker
         !read energy from pbuf
         step=flag(5)
         time=step/time_ratio
-        energy_size=flag(6)
 
         call CTCAW_readarea_int(num_par_id,from_rank,0,size(num_par),num_par)
         call CTCAW_readarea_int(num_par_v_id,from_rank,0,size(num_par_v),num_par_v)
-        particle_per_rank(from_rank) = particle_per_rank(from_rank) + energy_size
         !set flag
         flag(1)=1
         !time up
@@ -124,7 +113,6 @@ program worker
       call mysleep(0.01)
     end if
   end do
-  print*,particle_per_rank
   print*, "worker is writing data to file"
   call system("date")
   num_par_total=num_par_total*real_par_num_per_sup_par
