@@ -35,7 +35,7 @@ program worker
   !time is real unit
   real(kind=8) :: grid_length=0.5,time_ratio,time
   !flag of completion
-  integer :: flag_id,flag_size,flag(6)
+  integer :: flag_id,flag_size,flag(10)
   !output file of energy
   character(len=100) :: output_file_name
   integer :: output_file_unit=10,particle_per_rank(130)
@@ -44,7 +44,7 @@ program worker
   integer finished_rank,waiting_rank
   !number of super particles per time(sec), energy(log10 eV), and species(1or2)
   integer,allocatable    :: num_par(:,:),num_par_total(:,:,:)
-  integer num_par_id,energy_min,energy_max,nspecies,nstep
+  integer num_par_id,energy_bin,spec_num,nstep
 !
   call CTCAW_init(0, 1)
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
@@ -69,13 +69,12 @@ program worker
   if(.not.allocated(energy)) then
     allocate(energy(req_params(1)))
     allocate(species(req_params(1)))
-    energy_min=req_params(2)
-    energy_max=req_params(3)
-    nspecies=req_params(4)
+    energy_bin=req_params(3)
+    spec_num=req_params(4)
     nstep=req_params(5)
     real_par_num_per_sup_par=req_params(6)
-    allocate(num_par(energy_min:energy_max,nspecies))
-    allocate(num_par_total(energy_min:energy_max,nspecies,nstep))
+    allocate(num_par(-energy_bin:energy_bin,spec_num))
+    allocate(num_par_total(-energy_bin:energy_bin,spec_num,nstep))
     num_par_total=0
   end if
   call CTCAW_complete()
@@ -121,7 +120,7 @@ program worker
   print*, "worker is writing data to file"
   call system("date")
   num_par_total=num_par_total*real_par_num_per_sup_par
-  write(output_file_unit, '( *(G0, ",", I4, ",", I4, ",", I, /) )') (( (real(i)/time_ratio, j, k, num_par_total(k, j, i), k = energy_min, energy_max), j = 1, nspecies), i = 1, nstep)
+  write(output_file_unit, '( *(G0, ",", I4, ",", I4, ",", I, /) )') (( (real(i)/time_ratio, j, k, num_par_total(k, j, i), k = -energy_bin, energy_bin), j = 1, spec_num), i = 1, nstep)
   call system("date")
   call CTCAW_finalize()
   close(output_file_unit)

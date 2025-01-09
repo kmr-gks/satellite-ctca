@@ -38,7 +38,7 @@ module m_ctcamain
     !area id of pbuf, size of energy
     integer               :: pbuf_id,species_id,energy_size,i
     !flag of completion
-    integer :: flag_id,flag_size,flag(6)
+    integer :: flag_id,flag_size,flag(10)
     !position of satellite (emses unit)
     real(kind=8) :: shipx,shipy,shipz
     !neighbour threshold, super particle mass, grid length, neighbour volume
@@ -49,7 +49,8 @@ module m_ctcamain
     integer(kind=4) ::req_params(10)
     real(kind=8) :: req_params_real(10)
     !number of super particles per energy(10*log10eV), and species(1or2)
-    integer :: num_par(-100:100,2),num_par_id
+    integer,allocatable :: num_par(:,:)
+    integer :: num_par_id,energy_bin=100,spec_num=2
 
 contains
 
@@ -67,6 +68,7 @@ contains
         allocate(dist(pbuf_size))
         allocate(energy(pbuf_size))
         allocate(species(pbuf_size))
+        allocate(num_par(-energy_bin:energy_bin,spec_num))
         call CTCAR_regarea_real8(energy,pbuf_size,pbuf_id)
         call CTCAR_regarea_int(species,pbuf_size,species_id)
         call CTCAR_regarea_int(flag,flag_size,flag_id)
@@ -108,9 +110,9 @@ contains
         !send request
         if (myid.eq.0) then
             req_params(1)=pbuf_size
-            req_params(2)=lbound(num_par, 1)
-            req_params(3)=ubound(num_par, 1)
-            req_params(4)=size(num_par, 2)
+            req_params(2)=-energy_bin
+            req_params(3)=energy_bin
+            req_params(4)=spec_num
             req_params(5)=nstep
             req_params(6)=real_par_num_per_sup_par
             req_params_real(1)=time_ratio
