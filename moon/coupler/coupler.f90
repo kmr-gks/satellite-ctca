@@ -12,7 +12,7 @@ program coupler
   real(kind=8) :: req_params_real(10)
   integer :: flag_id,num_par_id
 !
-  call CTCAC_init_detail(1000, 100000, 1000, 80000, 10)
+  call CTCAC_init()
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
   call MPI_Comm_rank(CTCA_subcomm, myrank, ierr)
 !
