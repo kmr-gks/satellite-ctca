@@ -153,20 +153,12 @@ contains
                 else
                     energy(energy_size)=ion_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
                 end if
-                energy_index=int(10*log10(energy(energy_size)))
-                num_par(energy_index,species(energy_size))=num_par(energy_index,species(energy_size))+1
+                if (energy(energy_size).gt.0) then
+                    energy_index=int(10*log10(energy(energy_size)))
+                    num_par(energy_index,species(energy_size))=num_par(energy_index,species(energy_size))+1
+                end if
             end if
         end do
-        if (myid.eq.0.and..false.) then
-            print *, "istep=",istep
-            do i=-100,100
-                do j=1,2
-                    if (num_par(i,j).ne.0) then
-                        print *, "energy=",i,"[10log10eV], species=",j,", num_par=",num_par(i,j)
-                    end if
-                end do
-            end do
-        end if
 
         !set flag
         flag(1)=0
