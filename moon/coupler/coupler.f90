@@ -10,7 +10,7 @@ program coupler
   integer(kind=4) :: frmrank, progid
   integer(kind=4) :: req_params(10)
   real(kind=8) :: req_params_real(10)
-  integer :: flag_id,num_par_id
+  integer :: flag_id,num_par_id,num_par_v_id
 !
   call CTCAC_init()
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
@@ -21,6 +21,7 @@ program coupler
   call CTCAC_regarea_int(species_id)
   call CTCAC_regarea_int(flag_id)
   call CTCAC_regarea_int(num_par_id)
+  call CTCAC_regarea_int(num_par_v_id)
 !
   do while (.true.)
     call CTCAC_pollreq_withreal8(reqinf,frmrank,req_params,size(req_params),req_params_real,size(req_params_real))

@@ -49,8 +49,8 @@ module m_ctcamain
     integer(kind=4) ::req_params(10)
     real(kind=8) :: req_params_real(10)
     !number of super particles per energy(10*log10eV), and species(1or2)
-    integer,allocatable :: num_par(:,:)
-    integer :: num_par_id,energy_bin=100,spec_num=2
+    integer,allocatable :: num_par(:,:),num_par_v(:,:,:)
+    integer :: num_par_id,num_par_v_id,energy_bin=100,spec_num=2,v_dim=3
 
 contains
 
@@ -69,10 +69,12 @@ contains
         allocate(energy(pbuf_size))
         allocate(species(pbuf_size))
         allocate(num_par(-energy_bin:energy_bin,spec_num))
+        allocate(num_par_v(-energy_bin:energy_bin,v_dim,spec_num))
         call CTCAR_regarea_real8(energy,pbuf_size,pbuf_id)
         call CTCAR_regarea_int(species,pbuf_size,species_id)
         call CTCAR_regarea_int(flag,flag_size,flag_id)
         call CTCAR_regarea_int(num_par,size(num_par),num_par_id)
+        call CTCAR_regarea_int(num_par_v,size(num_par_v),num_par_v_id)
 
         ! set parameters from environment variables
         call get_environment_variable("SHIPY",env_shipy)
@@ -115,6 +117,7 @@ contains
             req_params(4)=spec_num
             req_params(5)=nstep
             req_params(6)=real_par_num_per_sup_par
+            req_params(7)=v_dim
             req_params_real(1)=time_ratio
             print*,"req_params_real(1)=",req_params_real(1)
             call CTCAR_sendreq_withreal8(req_params,size(req_params),req_params_real,size(req_params_real))
@@ -128,8 +131,10 @@ contains
         logical status1
         integer status2(MPI_STATUS_SIZE),ierr
         integer energy_index,j
+        real(kind=8) :: v(v_dim)
         
         num_par(:,:)=0
+        num_par_v(:,:,:)=0
 
         !set position of satellite
         shipx=istep/10
@@ -160,6 +165,9 @@ contains
                 else
                     energy(energy_size)=ion_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
                 end if
+                v(1)=abs(pbuf(i)%vx)/vel_ratio
+                v(2)=abs(pbuf(i)%vy)/vel_ratio
+                v(3)=abs(pbuf(i)%vz)/vel_ratio
                 !check energy
                 if (energy(energy_size).gt.0) then
                     energy_index=int(10*log10(energy(energy_size)))
@@ -168,6 +176,15 @@ contains
                     energy_index=min(energy_index,ubound(num_par, 1))
                     num_par(energy_index,species(energy_size))=num_par(energy_index,species(energy_size))+1
                 end if
+                do j=1,v_dim
+                if (v(j).gt.0) then
+                    energy_index=int(10*log10(v(j)))
+                    !check boundary
+                    energy_index=max(energy_index,lbound(num_par_v, 1))
+                    energy_index=min(energy_index,ubound(num_par_v, 1))
+                    num_par_v(energy_index,j,species(energy_size))=num_par_v(energy_index,j,species(energy_size))+1
+                    end if
+                end do
             end if
         end do
 
