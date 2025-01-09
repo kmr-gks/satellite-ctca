@@ -112,6 +112,7 @@ contains
             req_params(3)=ubound(num_par, 1)
             req_params(4)=size(num_par, 2)
             req_params(5)=nstep
+            req_params(6)=real_par_num_per_sup_par
             req_params_real(1)=time_ratio
             print*,"req_params_real(1)=",req_params_real(1)
             call CTCAR_sendreq_withreal8(req_params,size(req_params),req_params_real,size(req_params_real))

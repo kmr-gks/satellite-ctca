@@ -31,7 +31,7 @@ program worker
   real(kind=8) :: req_params_real(10)
   real*8,allocatable    :: energy(:)
   integer,allocatable    :: species(:)
-  integer :: pbuf_size, pbuf_mem, energy_size=0
+  integer :: pbuf_size, pbuf_mem, energy_size=0,real_par_num_per_sup_par
   !time is real unit
   real(kind=8) :: grid_length=0.5,time_ratio,time
   !flag of completion
@@ -60,7 +60,7 @@ program worker
   call CTCAW_regarea_int(num_par_id)
   !open the output file
   open(unit=output_file_unit,file=output_file_name, status='replace', action='write',buffered='yes')
-  write(output_file_unit,'(A)') "time-step,species,energy(10*log10eV),sup-par-count"
+  write(output_file_unit,'(A)') "time-step,species,energy(10*log10eV),par-count"
   !polling request
   call ctcaw_pollreq_withreal8(from_rank,req_params,size(req_params),req_params_real,size(req_params_real))
   print*,"req_params_real(1)=",req_params_real(1)
@@ -73,6 +73,7 @@ program worker
     energy_max=req_params(3)
     nspecies=req_params(4)
     nstep=req_params(5)
+    real_par_num_per_sup_par=req_params(6)
     allocate(num_par(energy_min:energy_max,nspecies))
     allocate(num_par_total(energy_min:energy_max,nspecies,nstep))
     num_par_total=0
@@ -119,7 +120,8 @@ program worker
   print*,particle_per_rank
   print*, "worker is writing data to file"
   call system("date")
-  write(output_file_unit, '( *(I4, ",", I4, ",", I4, ",", I8, /) )') (( (i, j, k, num_par_total(k, j, i), k = energy_min, energy_max), j = 1, nspecies), i = 1, nstep)
+  num_par_total=num_par_total*real_par_num_per_sup_par
+  write(output_file_unit, '( *(I4, ",", I4, ",", I4, ",", I, /) )') (( (i, j, k, num_par_total(k, j, i), k = energy_min, energy_max), j = 1, nspecies), i = 1, nstep)
   call system("date")
   call CTCAW_finalize()
   close(output_file_unit)
