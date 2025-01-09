@@ -35,6 +35,9 @@ output_file_name = file_name.replace('.csv','')
 
 #load data from file
 df_all=pd.read_csv(file_name)
+#get extent of data
+time_min, time_max = df_all['time'].agg(['min', 'max'])
+
 columns = ['par-count', 'vx-count', 'vy-count', 'vz-count']
 descriptions = ['Energy', 'x-comp. of vel.', 'y-comp. of vel.', 'z-comp. of vel.']
 xlabels = ['time [sec]', 'time [sec]', 'time [sec]', 'time [sec]']
@@ -45,7 +48,6 @@ for column, description,xlabel,ylabel in zip(columns, descriptions,xlabels,ylabe
 	#get nonzero data
 	df_non0=df_all[df_all[column] > 0]
 	#get extent of data
-	time_min, time_max = df_non0['time'].agg(['min', 'max'])
 	energy_min, energy_max = df_non0['energy(10*log10eV)'].agg(['min', 'max'])
 	count_min, count_max = df_non0[column].agg(['min', 'max'])
 	#filter data to only include the range of interest

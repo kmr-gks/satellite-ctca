@@ -177,17 +177,17 @@ contains
                     num_par(energy_index,species(energy_size))=num_par(energy_index,species(energy_size))+1
                 end if
                 do j=1,v_dim
-                if (v(j).gt.0) then
-                    energy_index=int(10*log10(v(j)))
-                    !check boundary
-                    energy_index=max(energy_index,lbound(num_par_v, 1))
-                    energy_index=min(energy_index,ubound(num_par_v, 1))
-                    num_par_v(energy_index,j,species(energy_size))=num_par_v(energy_index,j,species(energy_size))+1
+                    if (v(j).gt.0) then
+                        energy_index=int(10*log10(v(j)))
+                        !check boundary
+                        energy_index=max(energy_index,lbound(num_par_v, 1))
+                        energy_index=min(energy_index,ubound(num_par_v, 1))
+                        num_par_v(energy_index,j,species(energy_size))=num_par_v(energy_index,j,species(energy_size))+1
                     end if
                 end do
             end if
         end do
-
+        
         !set flag
         flag(1)=0
         flag(2)=myid

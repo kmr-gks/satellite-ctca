@@ -133,7 +133,7 @@ program worker
   format_string = '( *(G0, ",", I4, ",", I4, ",", I,' // repeat('",", I,', v_dim) // '/) )'
   write(output_file_unit, format_string) &
     (((real(i)/time_ratio, j, k, num_par_total(k, j, i), &
-        (num_par_v_total(k, j, l, i), l = 1, v_dim), &
+        (num_par_v_total(k, l, j, i), l = 1, v_dim), &
         k = -energy_bin, energy_bin), j = 1, spec_num), i = 1, nstep)
 
   call system("date")
