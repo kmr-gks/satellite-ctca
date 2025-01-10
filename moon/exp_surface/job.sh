@@ -28,7 +28,7 @@ export SHIP_Z_FROM=256
 export SHIP_Z_TO=256
 export NEIGHBOUR_THR=10
 #for python script after simulation
-export OUTPUT_DIR_NAME="x${SHIP_X_FROM}-${SHIP_X_TO}y${SHIP_Y_FROM}-${SHIP_Y_TO},z${SHIP_Z_FROM}-${SHIP_Z_TO},t${NEIGHBOUR_THR}"
+export OUTPUT_DIR_NAME="(${SHIP_X_FROM},${SHIP_Y_FROM},${SHIP_Z_FROM})-(${SHIP_X_TO},${SHIP_Y_TO},${SHIP_Z_TO})t${NEIGHBOUR_THR}"
 export OUTPUT_FILE_NAME="output.csv"
 export JOB_OUT_FILE="job.sh.${SLURM_JOB_ID}.out"
 export EXTENTION=".out"
