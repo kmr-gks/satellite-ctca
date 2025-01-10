@@ -24,42 +24,39 @@ export SHIPY=16
 export SHIPZ=256
 export NEIGHBOUR_THR=10
 #for python script after simulation
-export OUTPUT_FILE_NAME="y${SHIPY},z${SHIPZ},t${NEIGHBOUR_THR}"
+export OUTPUT_DIR_NAME="y${SHIPY},z${SHIPZ},t${NEIGHBOUR_THR}"
+export OUTPUT_FILE_NAME="output.csv"
 export JOB_OUT_FILE="job.sh.${SLURM_JOB_ID}.out"
-export EXTENTION=".csv"
+export EXTENTION=".out"
 
 # check if the output file exists
-NEW_FILE_NAME="${OUTPUT_FILE_NAME}${EXTENTION}"
+NEW_DIR_NAME="${OUTPUT_DIR_NAME}${EXTENTION}"
 COUNTER=0
-while [ -f "$NEW_FILE_NAME" ]; do
+while [ -d "$NEW_DIR_NAME" ]; do
 	COUNTER=$((COUNTER+1))
-	NEW_FILE_NAME="${OUTPUT_FILE_NAME}_${COUNTER}${EXTENTION}"
+	NEW_DIR_NAME="${OUTPUT_DIR_NAME}_${COUNTER}${EXTENTION}"
 done
 
-OUTPUT_FILE_NAME="${NEW_FILE_NAME}"
-echo "output file: $OUTPUT_FILE_NAME"
+OUTPUT_DIR_NAME="${NEW_DIR_NAME}"
+echo "output file: $OUTPUT_DIR_NAME"
+mkdir $OUTPUT_DIR_NAME
+cd $OUTPUT_DIR_NAME
 
 date
 
 rm *_0000.h5
-srun -l --multi-prog multi.conf
+srun -l --multi-prog ../multi.conf
 date
 
 # Postprocessing(visualization code, etc.)
 
 echo ...done
 
-if [ -f "$OUTPUT_FILE_NAME" ]; then
-	# ファイルサイズを取得 (バイト単位)
-	FILE_SIZE=$(stat -c%s "$OUTPUT_FILE_NAME")
-	if [ "$FILE_SIZE" -ge 1024 ]; then
-		echo "Running python script with $OUTPUT_FILE_NAME"
-		python histogram.py 
-	else
-		echo "Size of file '$OUTPUT_FILE_NAME' is too small."
-	fi
-else
-	echo "File '$OUTPUT_FILE_NAME' does not exist."
-fi
+#move other output files
+mkdir -p ${NEW_DIR_NAME}_output
+mv *.h5 chgacm1 chgacm2 chgmov currnt energy energy1 energy2 ewave icur influx isflux nesc noflux ocur oltime pbody pbodyd pbodyr plasma.inp plasma.out seyield SNAPSHOT1 volt ${NEW_DIR_NAME}_output/.
+
+echo "Running python script with $OUTPUT_DIR_NAME"
+python ../histogram.py 
 
 date
