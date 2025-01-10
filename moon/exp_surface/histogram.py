@@ -34,23 +34,43 @@ ylabel='Energy [eV]'
 
 #load data from file
 df_all=pd.read_csv(file_name)
-#get extent of data
-time_min, time_max = df_all['time'].agg(['min', 'max'])
+
+#save histograms for energy
+column, description='par-count', 'Energy'
+xlabel, ylabel = 'time [sec]', 'Energy [eV]'
 #get nonzero data
-df_non0 = df_all[(df_all[['par-count', 'vx-count', 'vy-count', 'vz-count']] > 0).any(axis=1)].replace(0, np.nan)
+df_non0 = df_all[(df_all[column] > 0)]
 #get extent of data
+time_min, time_max = df_non0['time'].agg(['min', 'max'])
 energy_min, energy_max = df_non0['energy(10*log10eV)'].agg(['min', 'max'])
-count_min, count_max = df_non0[['par-count', 'vx-count', 'vy-count', 'vz-count']].min().min(), df_non0[['par-count', 'vx-count', 'vy-count', 'vz-count']].max().max()
-#filter data to only include the range of interest
+count_min, count_max = df_non0[column].agg(['min', 'max'])
+print(f"extent of histogram of {description}: time: {time_min} to {time_max}, energy: {energy_min} to {energy_max}, count: {count_min} to {count_max}")
 df_allpar = df_all[
 	df_all['time'].between(time_min, time_max) &
 	df_all['energy(10*log10eV)'].between(energy_min, energy_max)
 ]
+#split data by species and save histograms
+df_ele, df_ion = df_allpar[df_allpar['species'] == 1], df_allpar[df_allpar['species'] == 2]
+save_hist2d(df_allpar, column, description+"(all particles)")
+save_hist2d(df_ele, column, description+"(electron)")
+save_hist2d(df_ion, column, description+"(ion)")
 
-columns = ['par-count', 'vx-count', 'vy-count', 'vz-count']
-descriptions = ['Energy', 'x-comp. of vel.', 'y-comp. of vel.', 'z-comp. of vel.']
-xlabels = ['time [sec]', 'time [sec]', 'time [sec]', 'time [sec]']
-ylabels = ['Energy [eV]', 'x-comp. of vel. [m/s]', 'y-comp. of vel. [m/s]', 'z-comp. of vel. [m/s]']
+#save histograms for velocity
+columns = ['vx-count', 'vy-count', 'vz-count']
+descriptions = ['x-comp. of vel.', 'y-comp. of vel.', 'z-comp. of vel.']
+xlabels = ['time [sec]', 'time [sec]', 'time [sec]']
+ylabels = ['x-comp. of vel. [m/s]', 'y-comp. of vel. [m/s]', 'z-comp. of vel. [m/s]']
+#get nonzero data
+df_non0 = df_all[(df_all[columns] > 0).any(axis=1)].replace(0, np.nan)
+#get extent of data
+time_min, time_max = df_non0['time'].agg(['min', 'max'])
+energy_min, energy_max = df_non0['energy(10*log10eV)'].agg(['min', 'max'])
+count_min, count_max = df_non0[columns].min().min(), df_non0[columns].max().max()
+print(f"extent of histogram of {description}: time: {time_min} to {time_max}, energy: {energy_min} to {energy_max}, count: {count_min} to {count_max}")
+df_allpar = df_all[
+	df_all['time'].between(time_min, time_max) &
+	df_all['energy(10*log10eV)'].between(energy_min, energy_max)
+]
 
 #save histograms
 for column, description,xlabel,ylabel in zip(columns, descriptions,xlabels,ylabels):
