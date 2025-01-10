@@ -39,11 +39,11 @@ module m_ctcamain
     !flag of completion
     integer :: flag_id,flag_size,flag(10)
     !position of satellite (emses unit)
-    real(kind=8) :: shipx,shipy,shipz
+    real(kind=8) :: ship_x_from,ship_x_to,ship_y_from,ship_y_to,ship_z_from,ship_z_to,shipx,shipy,shipz
     !neighbour threshold, super particle mass, grid length, neighbour volume
     real(kind=8) :: neighbour_thr,sup_par_mass,grid_length=0.5,neighbour_vol
     !environment variables
-    character(len=100) :: env_shipy,env_shipz,env_neighbour_thr
+    character(len=100) :: env_buffer
     !data for request
     integer(kind=4) ::req_params(10)
     real(kind=8) :: req_params_real(10)
@@ -72,12 +72,20 @@ contains
         call CTCAR_regarea_int(num_par_v,size(num_par_v),num_par_v_id)
 
         ! set parameters from environment variables
-        call get_environment_variable("SHIPY",env_shipy)
-        read(env_shipy,*) shipy
-        call get_environment_variable("SHIPZ",env_shipz)
-        read(env_shipz,*) shipz
-        call get_environment_variable("NEIGHBOUR_THR",env_neighbour_thr)
-        read(env_neighbour_thr,*) neighbour_thr
+        call get_environment_variable("SHIP_X_FROM",env_buffer)
+        read(env_buffer,*) ship_x_from
+        call get_environment_variable("SHIP_X_TO",env_buffer)
+        read(env_buffer,*) ship_x_to
+        call get_environment_variable("SHIP_Y_FROM",env_buffer)
+        read(env_buffer,*) ship_y_from
+        call get_environment_variable("SHIP_Y_TO",env_buffer)
+        read(env_buffer,*) ship_y_to
+        call get_environment_variable("SHIP_Z_FROM",env_buffer)
+        read(env_buffer,*) ship_z_from
+        call get_environment_variable("SHIP_Z_TO",env_buffer)
+        read(env_buffer,*) ship_z_to
+        call get_environment_variable("NEIGHBOUR_THR",env_buffer)
+        read(env_buffer,*) neighbour_thr
 
         ! get plasma frequency for ion
         wp_ion_emses=wp(2)
@@ -132,7 +140,9 @@ contains
         num_par_v(:,:,:)=0
 
         !set position of satellite
-        shipx=istep/10
+        shipx=ship_x_from+(ship_x_to-ship_x_from)*float(istep)/float(nstep)
+        shipy=ship_y_from+(ship_y_to-ship_y_from)*float(istep)/float(nstep)
+        shipz=ship_z_from+(ship_z_to-ship_z_from)*float(istep)/float(nstep)
 
         dist(:)=sqrt((pbuf(:)%x-shipx)**2+(pbuf(:)%y-shipy)**2+(pbuf(:)%z-shipz)**2)
         

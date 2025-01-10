@@ -20,21 +20,25 @@ module load hdf5/1.12.2_intel-2022.3-impi
 #set environment variables
 export EMSES_DEBUG=no
 
-export SHIPY=16
-export SHIPZ=256
+export SHIP_X_FROM=1
+export SHIP_X_TO=10
+export SHIP_Y_FROM=16
+export SHIP_Y_TO=16
+export SHIP_Z_FROM=256
+export SHIP_Z_TO=256
 export NEIGHBOUR_THR=10
 #for python script after simulation
-export OUTPUT_DIR_NAME="y${SHIPY},z${SHIPZ},t${NEIGHBOUR_THR}"
+export OUTPUT_DIR_NAME="x${SHIP_X_FROM}-${SHIP_X_TO}y${SHIP_Y_FROM}-${SHIP_Y_TO},z${SHIP_Z_FROM}-${SHIP_Z_TO},t${NEIGHBOUR_THR}"
 export OUTPUT_FILE_NAME="output.csv"
 export JOB_OUT_FILE="job.sh.${SLURM_JOB_ID}.out"
 export EXTENTION=".out"
 
 # check if the output file exists
-NEW_DIR_NAME="${OUTPUT_DIR_NAME}${EXTENTION}"
-COUNTER=0
+COUNTER=1
+NEW_DIR_NAME="${COUNTER}_${OUTPUT_DIR_NAME}${EXTENTION}"
 while [ -d "$NEW_DIR_NAME" ]; do
 	COUNTER=$((COUNTER+1))
-	NEW_DIR_NAME="${OUTPUT_DIR_NAME}_${COUNTER}${EXTENTION}"
+	NEW_DIR_NAME="${COUNTER}_${OUTPUT_DIR_NAME}${EXTENTION}"
 done
 
 OUTPUT_DIR_NAME="${NEW_DIR_NAME}"
