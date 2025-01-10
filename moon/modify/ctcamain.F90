@@ -49,7 +49,7 @@ module m_ctcamain
     real(kind=8) :: req_params_real(10)
     !number of super particles per energy(10*log10eV), and species(1or2)
     integer,allocatable :: num_par(:,:),num_par_v(:,:,:)
-    integer :: num_par_id,num_par_v_id,energy_bin=100,spec_num=2,v_dim=3
+    integer :: num_par_id,num_par_v_id,energy_bin=100,spec_num=2,v_dim=9
 
 contains
 
@@ -159,9 +159,12 @@ contains
                 else
                     energy=ion_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
                 end if
-                v(1)=abs(pbuf(i)%vx)/vel_ratio
-                v(2)=abs(pbuf(i)%vy)/vel_ratio
-                v(3)=abs(pbuf(i)%vz)/vel_ratio
+                v(4)=pbuf(i)%vx
+                v(5)=pbuf(i)%vy
+                v(6)=pbuf(i)%vz
+                v(1:3)=abs(v(4:6))
+                v(7:9)=-v(4:6)
+                v(:)=v(:)/vel_ratio
                 !check energy
                 if (energy.gt.0) then
                     energy_index=int(10*log10(energy))

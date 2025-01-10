@@ -57,7 +57,7 @@ program worker
   call CTCAW_regarea_int(num_par_v_id)
   !open the output file
   open(unit=output_file_unit,file=output_file_name, status='replace', action='write',buffered='yes')
-  write(output_file_unit,'(A)') "time,species,energy(10*log10eV),par-count,vx-count,vy-count,vz-count"
+  write(output_file_unit,'(A)') "time,species,energy(10*log10eV),par-count,vx-count,vy-count,vz-count,vx-p,vy-p,vz-p,vx-n,vy-n,vz-n"
   !polling request
   call ctcaw_pollreq_withreal8(from_rank,req_params,size(req_params),req_params_real,size(req_params_real))
   print*,"req_params_real(1)=",req_params_real(1)

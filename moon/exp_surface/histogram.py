@@ -56,10 +56,10 @@ save_hist2d(df_ele, column, description+"(electron)")
 save_hist2d(df_ion, column, description+"(ion)")
 
 #save histograms for velocity
-columns = ['vx-count', 'vy-count', 'vz-count']
-descriptions = ['x-comp. of vel.', 'y-comp. of vel.', 'z-comp. of vel.']
-xlabels = ['time [sec]', 'time [sec]', 'time [sec]']
-ylabels = ['x-comp. of vel. [m/s]', 'y-comp. of vel. [m/s]', 'z-comp. of vel. [m/s]']
+columns = ['vx-count', 'vy-count', 'vz-count', 'vx-p', 'vy-p', 'vz-p', 'vx-n', 'vy-n', 'vz-n']
+descriptions = ['x-comp. of vel.', 'y-comp. of vel.', 'z-comp. of vel.', 'x-comp. of vel. (+)', 'y-comp. of vel. (+)', 'z-comp. of vel. (+)', 'x-comp. of vel. (-)', 'y-comp. of vel. (-)', 'z-comp. of vel. (-)']
+xlabels = ['time [sec]'] * 9
+ylabels = ['x-comp. of vel. [m/s]', 'y-comp. of vel. [m/s]', 'z-comp. of vel. [m/s]', 'x-comp. of vel. (+)[m/s]', 'y-comp. of vel. (+)[m/s]', 'z-comp. of vel. (+)[m/s]', 'x-comp. of vel. (-)[m/s]', 'y-comp. of vel. (-)[m/s]', 'z-comp. of vel. (-)[m/s]']
 #get nonzero data
 df_non0 = df_all[(df_all[columns] > 0).any(axis=1)].replace(0, np.nan)
 #get extent of data
