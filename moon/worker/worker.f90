@@ -40,7 +40,8 @@ program worker
     character(len=100) :: date_str(3)
   integer finished_rank,waiting_rank
   !number of super particles per time(sec), energy(log10 eV), and species(1or2)
-  integer,allocatable    :: num_par(:,:),num_par_total(:,:,:),num_par_v(:,:,:),num_par_v_total(:,:,:,:)
+  integer,allocatable    :: num_par(:,:),num_par_v(:,:,:)
+  integer(kind=8),allocatable :: num_par_total(:,:,:),num_par_v_total(:,:,:,:)
   integer num_par_id,num_par_v_id,energy_bin,spec_num,v_dim,nstep
   character(len=100) :: format_string
 !
