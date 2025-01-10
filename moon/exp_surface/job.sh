@@ -10,6 +10,7 @@
 exec 2>&1
 
 cat $0
+cat plasma.inp
 
 #set -x
 #export LD_LIBRARY_PATH="/LARGE0/gr20001/KUspace-share/common/hdf5-lib/hdf5-1.14.3-240410/lib:/LARGE0/gr20001/KUspace-share/common/fftw-lib/fftw-3.3.10-240410/lib:$LD_LIBRARY_PATH"
@@ -28,20 +29,10 @@ export SHIP_Z_FROM=256
 export SHIP_Z_TO=256
 export NEIGHBOUR_THR=10
 #for python script after simulation
-export OUTPUT_DIR_NAME="(${SHIP_X_FROM},${SHIP_Y_FROM},${SHIP_Z_FROM})-(${SHIP_X_TO},${SHIP_Y_TO},${SHIP_Z_TO})t${NEIGHBOUR_THR}"
+export OUTPUT_DIR_NAME="(${SHIP_X_FROM},${SHIP_Y_FROM},${SHIP_Z_FROM})-(${SHIP_X_TO},${SHIP_Y_TO},${SHIP_Z_TO})t${NEIGHBOUR_THR}.${SLURM_JOB_ID}.out"
 export OUTPUT_FILE_NAME="output.csv"
 export JOB_OUT_FILE="job.sh.${SLURM_JOB_ID}.out"
-export EXTENTION=".out"
 
-# check if the output file exists
-COUNTER=1
-NEW_DIR_NAME="${COUNTER}_${OUTPUT_DIR_NAME}${EXTENTION}"
-while [ -d "$NEW_DIR_NAME" ]; do
-	COUNTER=$((COUNTER+1))
-	NEW_DIR_NAME="${COUNTER}_${OUTPUT_DIR_NAME}${EXTENTION}"
-done
-
-OUTPUT_DIR_NAME="${NEW_DIR_NAME}"
 echo "output file: $OUTPUT_DIR_NAME"
 mkdir $OUTPUT_DIR_NAME
 cd $OUTPUT_DIR_NAME
@@ -57,8 +48,8 @@ date
 echo ...done
 
 #move other output files
-mkdir -p ${NEW_DIR_NAME}_output
-mv *.h5 chgacm1 chgacm2 chgmov currnt energy energy1 energy2 ewave icur influx isflux nesc noflux ocur oltime pbody pbodyd pbodyr plasma.inp plasma.out seyield SNAPSHOT1 volt ${NEW_DIR_NAME}_output/.
+mkdir -p ${SLURM_JOB_ID}_output
+mv *.h5 chgacm1 chgacm2 chgmov currnt energy energy1 energy2 ewave icur influx isflux nesc noflux ocur oltime pbody pbodyd pbodyr plasma.inp plasma.out seyield SNAPSHOT1 volt ${SLURM_JOB_ID}_output/.
 
 echo "Running python script with $OUTPUT_DIR_NAME"
 python ../histogram.py 
