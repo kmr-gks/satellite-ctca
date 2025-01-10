@@ -42,7 +42,8 @@ program worker
   !number of super particles per time(sec), energy(log10 eV), and species(1or2)
   integer,allocatable    :: num_par(:,:),num_par_v(:,:,:)
   integer(kind=8),allocatable :: num_par_total(:,:,:),num_par_v_total(:,:,:,:)
-  integer num_par_id,num_par_v_id,energy_bin,spec_num,v_dim,nstep
+  !step_csv time-step number for csv output
+  integer :: num_par_id,num_par_v_id,energy_bin,spec_num,v_dim,nstep,step_csv=100
   character(len=100) :: format_string
 !
   call CTCAW_init(0, 1)
@@ -64,16 +65,16 @@ program worker
   print*,"req_params_real(1)=",req_params_real(1)
   time_ratio=req_params_real(1)
   !allocate energy array
-   energy_bin=req_params(3)
+  energy_bin=req_params(3)
   spec_num=req_params(4)
   nstep=req_params(5)
   real_par_num_per_sup_par=req_params(6)
   v_dim=req_params(7)
   allocate(num_par(-energy_bin:energy_bin,spec_num))
-  allocate(num_par_total(-energy_bin:energy_bin,spec_num,nstep))
+  allocate(num_par_total(-energy_bin:energy_bin,spec_num,step_csv))
   num_par_total=0
   allocate(num_par_v(-energy_bin:energy_bin,v_dim,spec_num))
-  allocate(num_par_v_total(-energy_bin:energy_bin,v_dim,spec_num,nstep))
+  allocate(num_par_v_total(-energy_bin:energy_bin,v_dim,spec_num,step_csv))
   num_par_v_total=0
   call CTCAW_complete()
 !
@@ -97,6 +98,7 @@ program worker
         flag(1)=1
         !time up
         call CTCAW_writearea_int(flag_id,from_rank,0,flag_size,flag)
+        step=ceiling(real(step_csv)*step/nstep)
         num_par_total(:,:,step)=num_par_total(:,:,step)+num_par(:,:)
         num_par_v_total(:,:,:,step)=num_par_v_total(:,:,:,step)+num_par_v(:,:,:)
       else if (flag(1).eq.1) then
@@ -118,9 +120,9 @@ program worker
   ! create dynamic format string
   format_string = '( *(G0, ",", I4, ",", I4, ",", I,' // repeat('",", I,', v_dim) // '/) )'
   write(output_file_unit, format_string) &
-    (((real(i)/time_ratio, j, k, num_par_total(k, j, i), &
+    (((real(i)/step_csv*nstep/time_ratio, j, k, num_par_total(k, j, i), &
         (num_par_v_total(k, l, j, i), l = 1, v_dim), &
-        k = -energy_bin, energy_bin), j = 1, spec_num), i = 1, nstep)
+        k = -energy_bin, energy_bin), j = 1, spec_num), i = 1, step_csv)
 
   call system("date")
   call CTCAW_finalize()
