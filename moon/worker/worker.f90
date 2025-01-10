@@ -109,9 +109,6 @@ program worker
       !if half of the ranks are finished, worker will exit
       exit
     end if
-    if (waiting_rank.eq.128) then
-      call mysleep(0.01)
-    end if
   end do
   print*, "worker is writing data to file"
   call system("date")

@@ -142,7 +142,6 @@ contains
                 !wait for worker
                 !print *, "wait for worker",myid
                 call MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, status1, status2, ierr)
-                call mysleep(0.01)
             else
                 exit
             end if
