@@ -40,7 +40,7 @@ elif [[ $hostname == camphor* ]]; then # on camphor
 	module load fftw/3.3.10_intel-2022.3-impi
 
 	export GCC_FLAGS="-ipo -O3 -no-prec-div -static_mpi -xHost -fp-model precise "
-	export GCC_FLAGS="-O0"
+	#export GCC_FLAGS="-O0 -g -checkall"
 
 	# Set CoToCoA mode by marco definition.
 	export GCC_FLAGS="$GCC_FLAGS -D$cotocoa_mode"
