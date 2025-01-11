@@ -99,6 +99,9 @@ program worker
         !time up
         call CTCAW_writearea_int(flag_id,from_rank,0,flag_size,flag)
         step=ceiling(real(step_csv)*step/nstep)
+        ! Measures for floating point calculation errors
+        step=max(step,1)
+        step=min(step,step_csv)
         num_par_total(:,:,step)=num_par_total(:,:,step)+num_par(:,:)
         num_par_v_total(:,:,:,step)=num_par_v_total(:,:,:,step)+num_par_v(:,:,:)
       else if (flag(1).eq.1) then
