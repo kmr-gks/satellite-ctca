@@ -112,6 +112,14 @@ contains
             print *, "real_par_num_per_sup_par=",real_par_num_per_sup_par,"[1]"
             print *, "sup_par_mass=",sup_par_mass,"[kg]"
         end if
+        !convert ship position to emses unit
+        ship_x_from=ship_x_from*len_ratio
+        ship_x_to=ship_x_to*len_ratio
+        ship_y_from=ship_y_from*len_ratio
+        ship_y_to=ship_y_to*len_ratio
+        ship_z_from=ship_z_from*len_ratio
+        ship_z_to=ship_z_to*len_ratio
+        neighbour_thr=neighbour_thr*len_ratio
         !send request
         if (myid.eq.0) then
             req_params(1)=pbuf_size

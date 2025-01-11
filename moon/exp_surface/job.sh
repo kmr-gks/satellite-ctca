@@ -21,15 +21,17 @@ module load hdf5/1.12.2_intel-2022.3-impi
 #set environment variables
 export EMSES_DEBUG=no
 
-export SHIP_X_FROM=1
-export SHIP_X_TO=10
-export SHIP_Y_FROM=16
-export SHIP_Y_TO=16
-export SHIP_Z_FROM=256
-export SHIP_Z_TO=256
-export NEIGHBOUR_THR=10
+#set ship position and neighbour threshold [m]
+export SHIP_X_FROM=0
+export SHIP_X_TO=16
+export SHIP_Y_FROM=8
+export SHIP_Y_TO=8
+export SHIP_Z_FROM=128
+export SHIP_Z_TO=128
+export NEIGHBOUR_THR=1
+
 #for python script after simulation
-export OUTPUT_DIR_NAME="(${SHIP_X_FROM},${SHIP_Y_FROM},${SHIP_Z_FROM})-(${SHIP_X_TO},${SHIP_Y_TO},${SHIP_Z_TO})t${NEIGHBOUR_THR}.${SLURM_JOB_ID}.out"
+export OUTPUT_DIR_NAME="${SLURM_JOB_ID}.(${SHIP_X_FROM},${SHIP_Y_FROM},${SHIP_Z_FROM})-(${SHIP_X_TO},${SHIP_Y_TO},${SHIP_Z_TO})t${NEIGHBOUR_THR}.out"
 export OUTPUT_FILE_NAME="output.csv"
 export JOB_OUT_FILE="job.sh.${SLURM_JOB_ID}.out"
 
