@@ -54,8 +54,8 @@ fig, axes = plt.subplots(1, 2, figsize=(12, 5), sharex="col", sharey="row", cons
 norm = mpl.colors.LogNorm(vmin=count_min, vmax=count_max)
 cmap = plt.get_cmap()
 
-save_hist2d(axes[0], df_ele, column, description+"(electron)")
-save_hist2d(axes[1], df_ion, column, description+"(ion)")
+save_hist2d(axes[0], df_ion, column, description+"(ion)")
+save_hist2d(axes[1], df_ele, column, description+"(electron)")
 fig.supxlabel(xlabel)
 fig.supylabel(ylabel)
 cbar=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=axes.ravel().tolist(), aspect=25, location="right", pad=0.1)
