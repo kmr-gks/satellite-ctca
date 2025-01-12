@@ -50,8 +50,8 @@ date
 echo ...done
 
 #move other output files
-mkdir -p ${SLURM_JOB_ID}_output
-mv *.h5 chgacm1 chgacm2 chgmov currnt energy energy1 energy2 ewave icur influx isflux nesc noflux ocur oltime pbody pbodyd pbodyr plasma.inp plasma.out seyield SNAPSHOT1 volt ${SLURM_JOB_ID}_output/.
+mkdir -p ../output/${SLURM_JOB_ID}
+mv *.h5 chgacm1 chgacm2 chgmov currnt energy energy1 energy2 ewave icur influx isflux nesc noflux ocur oltime pbody pbodyd pbodyr plasma.inp plasma.out seyield SNAPSHOT1 volt ../output/${SLURM_JOB_ID}/.
 
 echo "Running python script with $OUTPUT_DIR_NAME"
 python ../histogram.py 
