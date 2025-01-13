@@ -43,11 +43,10 @@ if df_non0.empty:
 	count_min, count_max = 1,10
 else:
 	count_min, count_max = df_non0[column].agg(['min', 'max'])
-time_min, time_max = df_non0['time'].agg(['min', 'max'])
+time_min, time_max = df_all['time'].agg(['min', 'max'])
 energy_min, energy_max = df_non0['energy(10*log10eV)'].agg(['min', 'max'])
 
 df_allpar = df_all[
-	df_all['time'].between(time_min, time_max) &
 	df_all['energy(10*log10eV)'].between(energy_min, energy_max)
 ]
 #split data by species and save histograms
@@ -80,11 +79,9 @@ if df_non0.empty:
 else:
 	count_min, count_max = df_non0[columns].min().min(), df_non0[columns].max().max()
 #get extent of data
-time_min, time_max = df_non0['time'].agg(['min', 'max'])
 energy_min, energy_max = df_non0['energy(10*log10eV)'].agg(['min', 'max'])
 
 df_allpar = df_all[
-	df_all['time'].between(time_min, time_max) &
 	df_all['energy(10*log10eV)'].between(energy_min, energy_max)
 ]
 
