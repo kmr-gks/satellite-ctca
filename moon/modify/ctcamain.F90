@@ -104,6 +104,13 @@ contains
         sup_par_mass=ion_mass*real_par_num_per_sup_par
         neighbour_vol=4/3*pi*(neighbour_thr*grid_length)**3
         if (myid.eq.0) then
+            print *, "ion_charge=",ion_charge,"[C]"
+            print *, "ion_mass=",ion_mass,"[kg]"
+            print *, "electron_mass=",electron_mass,"[kg]"
+            print *, "len_ratio=",len_ratio
+            print *, "vel_ratio=",vel_ratio
+            print *, "time_ratio=",time_ratio
+            print *, "freq_ratio=",freq_ratio
             print *, "wp_ion_emses=",wp_ion_emses
             print *, "wp_ion_real=",wp_ion_real,"[Hz]"
             print *, "ion_density=",ion_density,"[/cc]"
@@ -177,6 +184,7 @@ contains
                 else
                     energy=ion_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
                 end if
+                !velocity(m/s)
                 v(4)=pbuf(i)%vx
                 v(5)=pbuf(i)%vy
                 v(6)=pbuf(i)%vz
