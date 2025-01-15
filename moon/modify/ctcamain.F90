@@ -28,7 +28,7 @@ module m_ctcamain
     !elementary charge[C], ion mass[kg], electron mass[kg], permittivity of vacuum[F/m]
     real(kind=8) :: ion_charge=1.6021766d-19,ion_mass=1.6726219d-27,electron_mass=9.109383d-31,permittivity=8.85418781d-12
     !ratio of emses to real unit, ion density[/cc]
-    real(kind=8) :: len_ratio,vel_ratio,time_ratio,freq_ratio,ion_density
+    real(kind=8) :: len_ratio,vel_ratio,time_ratio,freq_ratio,ion_density,vel_ratio_k
 
     !distance between satellite and particles, energy density
     real(kind=8),allocatable :: dist(:)
@@ -90,8 +90,10 @@ contains
         ! get plasma frequency for ion
         wp_ion_emses=wp(2)
 
+        !plasma.inpでcv=10000としてもcv=10として実行されてしまう
         len_ratio=1/grid_length
         vel_ratio=cv*1e3/2.99792458d8
+        vel_ratio_k=cv/2.99792458d8
         time_ratio=len_ratio/vel_ratio
         freq_ratio=1/time_ratio
 
@@ -104,6 +106,9 @@ contains
         sup_par_mass=ion_mass*real_par_num_per_sup_par
         neighbour_vol=4/3*pi*(neighbour_thr*grid_length)**3
         if (myid.eq.0) then
+            print *, "cv=",cv
+            print *, "cv*1e3/2.99792458d8=",cv*1e3/2.99792458d8
+            print *, "grid_length=",grid_length,"[m]"
             print *, "ion_charge=",ion_charge,"[C]"
             print *, "ion_mass=",ion_mass,"[kg]"
             print *, "electron_mass=",electron_mass,"[kg]"
@@ -181,9 +186,9 @@ contains
                 species=pbuf(i)%spec
                 !energy(eV)
                 if (species.eq.1) then
-                    energy=electron_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
+                    energy=electron_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio_k**2)/2/ion_charge
                 else
-                    energy=ion_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio**2)/2/ion_charge
+                    energy=ion_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio_k**2)/2/ion_charge
                 end if
                 !velocity(m/s)
                 v(4)=pbuf(i)%vx
@@ -191,7 +196,7 @@ contains
                 v(6)=pbuf(i)%vz
                 v(1:3)=abs(v(4:6))
                 v(7:9)=-v(4:6)
-                v(:)=v(:)/vel_ratio
+                v(:)=v(:)/vel_ratio_k
                 !check energy
                 if (energy.gt.0) then
                     energy_index=int(10*log10(energy))
