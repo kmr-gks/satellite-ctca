@@ -148,7 +148,7 @@ contains
         implicit none
         logical status1
         integer status2(MPI_STATUS_SIZE),ierr
-        integer energy_index,j,species
+        integer energy_index,j,species,pbuf_valid_size
         real(kind=8) :: v(v_dim),energy
         
         num_par(:,:)=0
@@ -173,8 +173,9 @@ contains
         end do
 
         !calculate energy
+        pbuf_valid_size=sum(totalp)
         energy_size=0
-        do i=1, pbuf_size
+        do i=1, pbuf_valid_size
             if (dist(i).lt.neighbour_thr) then
                 energy_size=energy_size+1
                 species=pbuf(i)%spec
