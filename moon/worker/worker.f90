@@ -112,7 +112,7 @@ program worker
         finished_rank=finished_rank+1
       end if
     end do
-    if (finished_rank.gt.64) then
+    if (finished_rank.gt.nprocs_reqester/2) then
       !if half of the ranks are finished, worker will exit
       exit
     end if
