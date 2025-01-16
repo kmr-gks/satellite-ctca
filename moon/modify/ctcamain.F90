@@ -61,6 +61,9 @@ contains
         real(kind=8) :: simu_vol
         !number of super particles
         integer sup_par_num,real_par_num_per_sup_par
+        integer nprocess, ierr
+
+        call MPI_Comm_size(CTCA_subcomm, nprocess, ierr)
 
         pbuf_size=size(pbuf)
         flag_size = size(flag)
@@ -141,6 +144,7 @@ contains
             req_params(5)=nstep
             req_params(6)=real_par_num_per_sup_par
             req_params(7)=v_dim
+            req_params(8)=nprocess
             req_params_real(1)=time_ratio
             print*,"req_params_real(1)=",req_params_real(1)
             call CTCAR_sendreq_withreal8(req_params,size(req_params),req_params_real,size(req_params_real))

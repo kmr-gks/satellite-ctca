@@ -21,7 +21,7 @@ program worker
   use common_module
   implicit none
 !
-  integer :: ierr, myrank, nprocs
+  integer :: ierr, myrank, nprocs, nprocs_reqester
   !area id
   integer :: i,j,k,l,step=0
   integer :: from_rank
@@ -70,6 +70,7 @@ program worker
   nstep=req_params(5)
   real_par_num_per_sup_par=req_params(6)
   v_dim=req_params(7)
+  nprocs_reqester=req_params(8)
   allocate(num_par(-energy_bin:energy_bin,spec_num))
   allocate(num_par_total(-energy_bin:energy_bin,spec_num,step_csv))
   num_par_total=0
@@ -83,7 +84,7 @@ program worker
     
     finished_rank=0
     waiting_rank=0
-    do from_rank=0,127
+    do from_rank=0,nprocs_reqester-1
       call CTCAW_readarea_int(flag_id,from_rank,0,flag_size,flag)
       if (flag(1).eq.0) then
         !write to csv
