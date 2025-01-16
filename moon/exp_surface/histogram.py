@@ -8,7 +8,7 @@ import os
 
 # custom formatter for y-axis
 def log_formatter(value, tick_number):
-    return f"$10^{{{int(value/10)}}}$"
+    return f"$10^{{{value/10}}}$"
 
 def save_hist2d(axe, df, column, title):
 	#csv data is binned by time and energy, so we can use pivot_table to create a 2D histogram
@@ -27,6 +27,7 @@ else: #default file name if not called from job script
 	file_name="output.csv"
 
 colorbar_label='number of actual particles'
+dpi=600
 
 #load data from file
 df_all=pd.read_csv(file_name)
@@ -53,7 +54,7 @@ df_allpar = df_all[
 df_ele, df_ion = df_allpar[df_allpar['species'] == 1], df_allpar[df_allpar['species'] == 2]
 
 #save histograms for energy
-fig, axes = plt.subplots(1, 2, figsize=(12, 5), sharex="col", sharey="row", constrained_layout=True)
+fig, axes = plt.subplots(1, 2, figsize=(6, 2.5), sharex="col", sharey="row", constrained_layout=True)
 norm = mpl.colors.LogNorm(vmin=count_min, vmax=count_max)
 cmap = plt.get_cmap()
 
@@ -63,7 +64,7 @@ fig.supxlabel(xlabel)
 fig.supylabel(ylabel)
 cbar=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=axes.ravel().tolist(), aspect=25, location="right", pad=0.1)
 cbar.set_label(colorbar_label)
-plt.savefig(description, dpi=300)
+plt.savefig(description, dpi=dpi)
 
 #save histograms for velocity
 columns = ['vx-p', 'vy-p', 'vz-p', 'vx-n', 'vy-n', 'vz-n']
@@ -89,7 +90,7 @@ df_ele, df_ion = df_allpar[df_allpar['species'] == 1], df_allpar[df_allpar['spec
 
 #save histograms for velocity
 for i in range(3):
-	fig, axes = plt.subplots(2, 2, figsize=(12, 10), sharex="col", sharey="row", constrained_layout=True)
+	fig, axes = plt.subplots(2, 2, figsize=(6, 5), sharex="col", sharey="row", constrained_layout=True)
 	norm = mpl.colors.LogNorm(vmin=count_min, vmax=count_max)
 	cmap = plt.get_cmap()
 	save_hist2d(axes[0,0], df_ion, columns[i], descriptions[i]+"(ion)")
@@ -100,4 +101,4 @@ for i in range(3):
 	fig.supylabel(ylabel)
 	cbar=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=axes.ravel().tolist(), aspect=25, location="right", pad=0.1)
 	cbar.set_label(colorbar_label)
-	plt.savefig(file_name[i], dpi=300)
+	plt.savefig(file_name[i], dpi=dpi)
