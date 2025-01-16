@@ -107,7 +107,7 @@ contains
         neighbour_vol=4/3*pi*(neighbour_thr*grid_length)**3
         if (myid.eq.0) then
             print *, "cv=",cv
-            print *, "cv*1e3/2.99792458d8=",cv*1e3/2.99792458d8
+            print *, "wp=",wp
             print *, "grid_length=",grid_length,"[m]"
             print *, "ion_charge=",ion_charge,"[C]"
             print *, "ion_mass=",ion_mass,"[kg]"
@@ -153,11 +153,13 @@ contains
         implicit none
         logical status1
         integer status2(MPI_STATUS_SIZE),ierr
-        integer energy_index,j,species,pbuf_valid_size
-        real(kind=8) :: v(v_dim),energy
+        integer energy_index,j,species,pbuf_valid_size,v_sum_size(spec_num)
+        real(kind=8) :: v(v_dim),energy,v_sum(spec_num,3),v_avg(spec_num,3)
         
         num_par(:,:)=0
         num_par_v(:,:,:)=0
+        v_sum(:,:)=0
+        v_sum_size(:)=0
 
         !set position of satellite
         shipx=ship_x_from+(ship_x_to-ship_x_from)*float(istep)/float(nstep)
@@ -197,9 +199,11 @@ contains
                 v(1:3)=abs(v(4:6))
                 v(7:9)=-v(4:6)
                 v(:)=v(:)/vel_ratio_k
+                v_sum(species,:)=v_sum(species,:)+v(1:3)
+                v_sum_size(species)=v_sum_size(species)+1
                 !check energy
                 if (energy.gt.0) then
-                    energy_index=int(10*log10(energy))
+                    energy_index=nint(10*log10(energy))
                     !check boundary
                     energy_index=max(energy_index,lbound(num_par, 1))
                     energy_index=min(energy_index,ubound(num_par, 1))
@@ -207,7 +211,7 @@ contains
                 end if
                 do j=1,v_dim
                     if (v(j).gt.0) then
-                        energy_index=int(10*log10(v(j)))
+                        energy_index=nint(10*log10(v(j)))
                         !check boundary
                         energy_index=max(energy_index,lbound(num_par_v, 1))
                         energy_index=min(energy_index,ubound(num_par_v, 1))
@@ -224,6 +228,12 @@ contains
         flag(4)=pbuf_mem
         flag(5)=istep
         flag(6)=energy_size
+        !ランクが保有する粒子のうち衛星に近いものの速度成分の平均
+        if (v_sum_size(1).gt.0.and.v_sum_size(2).gt.0) then
+            v_avg(1,:)=v_sum(1,:)/v_sum_size(1)
+            v_avg(2,:)=v_sum(2,:)/v_sum_size(2)
+            !print *,"step",istep,"rank",myid,"avg_v=",v_avg
+        end if
     end subroutine cotocoa_mainstep
 
     subroutine cotocoa_finalize
