@@ -43,6 +43,13 @@ date
 
 rm *_0000.h5
 srun -l --multi-prog ../multi.conf
+
+if [ $? -ne 0 ]; then
+  echo "error"
+  date
+  exit 1
+fi
+
 date
 
 # Postprocessing(visualization code, etc.)
