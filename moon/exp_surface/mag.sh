@@ -40,7 +40,8 @@ mkdir $OUTPUT_DIR_NAME
 cd $OUTPUT_DIR_NAME
 
 mkdir -p ../output/${SLURM_JOB_ID}
-cp $0 ../plasma.inp ../output/${SLURM_JOB_ID}/.
+cp $0 ../output/${SLURM_JOB_ID}/.
+cp ../mag.inp ../output/${SLURM_JOB_ID}/plasma.inp
 date
 
 rm *_0000.h5
