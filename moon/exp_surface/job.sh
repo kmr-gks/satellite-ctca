@@ -39,26 +39,19 @@ echo "output file: $OUTPUT_DIR_NAME"
 mkdir $OUTPUT_DIR_NAME
 cd $OUTPUT_DIR_NAME
 
+mkdir -p ../output/${SLURM_JOB_ID}
+cp $0 ../plasma.inp ../output/${SLURM_JOB_ID}/.
 date
 
 rm *_0000.h5
 srun -l --multi-prog ../multi.conf
-
-if [ $? -ne 0 ]; then
-  echo "error"
-  date
-  exit 1
-fi
-
-date
 
 # Postprocessing(visualization code, etc.)
 
 echo ...done
 
 #move other output files
-mkdir -p ../output/${SLURM_JOB_ID}
-mv *.h5 chgacm1 chgacm2 chgmov currnt energy energy1 energy2 ewave icur influx isflux nesc noflux ocur oltime pbody pbodyd pbodyr plasma.inp plasma.out seyield SNAPSHOT1 volt ../output/${SLURM_JOB_ID}/.
+mv *.h5 chgacm1 chgacm2 chgmov currnt energy energy1 energy2 ewave icur influx isflux nesc noflux ocur oltime pbody pbodyd pbodyr plasma.out seyield SNAPSHOT1 volt ../output/${SLURM_JOB_ID}/.
 
 echo "Running python script with $OUTPUT_DIR_NAME"
 python ../histogram.py 
