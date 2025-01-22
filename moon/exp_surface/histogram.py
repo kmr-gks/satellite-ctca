@@ -15,8 +15,8 @@ def save_hist2d(axe, df, column, title):
 	hist_data = df.pivot_table(index='energy(10*log10eV)', columns='time', values=column, aggfunc=np.sum, fill_value=0)
 	#plot histogram
 	im= axe.imshow(hist_data, aspect='auto', origin='lower', extent=[time_min, time_max, energy_min, energy_max], norm=LogNorm(vmin=count_min, vmax=count_max))
-	#axe.set_title(title)
-	axe.text(0.5, 0.05, title, transform=axe.transAxes, fontsize=12, va='bottom', ha='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'))
+	axe.set_title(title,y=-0.3)
+	#axe.text(0.5, 0.05, title, transform=axe.transAxes, fontsize=12, va='bottom', ha='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'))
 	#set scale for energy(10*log10eV -> linear scale)
 	axe.yaxis.set_major_formatter(FuncFormatter(log_formatter))
 	return im
@@ -26,7 +26,7 @@ if 'OUTPUT_FILE_NAME' in os.environ: #called from job script
 else: #default file name if not called from job script
 	file_name="output.csv"
 
-colorbar_label='Energy flux [eV/m^2/s/eV]'
+colorbar_label='Energy flux [eV/$\mathrm{m}^2$/s/eV]'
 dpi=600
 
 #load data from file
@@ -68,8 +68,8 @@ plt.savefig(description, dpi=dpi)
 
 #save histograms for velocity
 columns = ['vx-p', 'vy-p', 'vz-p', 'vx-n', 'vy-n', 'vz-n']
-descriptions = ['x-comp. of vel. (+)', 'y-comp. of vel. (+)', 'z-comp. of vel. (+)', 'x-comp. of vel. (-)', 'y-comp. of vel. (-)', 'z-comp. of vel. (-)']
-file_name=['x-comp. of vel.', 'y-comp. of vel.', 'z-comp. of vel.']
+descriptions = ['positive $v_x$', 'positive $v_y$', 'positive $v_z$', 'negative $v_x$', 'negative $v_y$', 'negative $v_z$']
+file_name=['vx', 'vy', 'vz']
 xlabel = 'time [sec]'
 ylabel = "velocity [m/s]"
 #get nonzero data
@@ -90,7 +90,7 @@ df_ele, df_ion = df_allpar[df_allpar['species'] == 1], df_allpar[df_allpar['spec
 
 #save histograms for velocity
 for i in range(3):
-	fig, axes = plt.subplots(2, 2, figsize=(6, 5), sharex="col", sharey="row", constrained_layout=True)
+	fig, axes = plt.subplots(2, 2, figsize=(6, 5), sharey="row", constrained_layout=True)
 	norm = mpl.colors.LogNorm(vmin=count_min, vmax=count_max)
 	cmap = plt.get_cmap()
 	save_hist2d(axes[0,0], df_ion, columns[i], descriptions[i]+"(ion)")
