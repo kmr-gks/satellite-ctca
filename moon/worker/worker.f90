@@ -30,7 +30,7 @@ program worker
   real(kind=8) :: req_params_real(10)
   integer :: pbuf_size, pbuf_mem, real_par_num_per_sup_par
   !time is real unit
-  real(kind=8) :: grid_length=0.5,time_ratio,time
+  real(kind=8) :: grid_length=0.5,time_ratio,time,neighbour_vol_real, energy_extent
   !flag of completion
   integer :: flag_id,flag_size,flag(10)
   !output file of energy
@@ -64,6 +64,8 @@ program worker
   call ctcaw_pollreq_withreal8(from_rank,req_params,size(req_params),req_params_real,size(req_params_real))
   print*,"req_params_real(1)=",req_params_real(1)
   time_ratio=req_params_real(1)
+  neighbour_vol_real=req_params_real(2)
+  print*, "neighbour_vol_real=",neighbour_vol_real,"[m^3]"
   !allocate energy array
   energy_bin=req_params(3)
   spec_num=req_params(4)
@@ -117,14 +119,24 @@ program worker
       exit
     end if
   end do
-  print*, "worker is writing data to file"
   call system("date")
+  !transform number of super particles to number of real particles
   num_par_total=num_par_total*real_par_num_per_sup_par
   num_par_v_total=num_par_v_total*real_par_num_per_sup_par
   !take average by step (time)
   !配列の時間の次元について、複数のステップのデータが1行に対応するときは対応ステップ数で割り平均を取る
   num_par_total=num_par_total/(nstep/step_csv)
   num_par_v_total=num_par_v_total/(nstep/step_csv)
+  !devide by volume of observation range
+  num_par_total=num_par_total/neighbour_vol_real
+  num_par_v_total=num_par_v_total/neighbour_vol_real
+  !devide by extent of energy bin in log10 scale
+  do i=-energy_bin,energy_bin
+    energy_extent=10**((i+1)/10.0)-10**(i/10.0)
+    !print*,"energy_extent=10^",(i+1)/10.0-"10^",i/10.0,"=",10**((i+1)/10.0),"-",10**(i/10.0),"=",energy_extent
+    num_par_total(i,:,:) = num_par_total(i,:,:)/energy_extent
+    num_par_v_total(i,:,:,:) = num_par_v_total(i,:,:,:)/energy_extent
+  end do
   ! create dynamic format string
   format_string = '( *(G0, ",", I4, ",", I4, ",", I,' // repeat('",", I,', v_dim) // '/) )'
   write(output_file_unit, format_string) &

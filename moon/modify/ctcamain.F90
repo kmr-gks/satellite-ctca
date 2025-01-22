@@ -41,7 +41,7 @@ module m_ctcamain
     !position of satellite (emses unit)
     real(kind=8) :: ship_x_from,ship_x_to,ship_y_from,ship_y_to,ship_z_from,ship_z_to,shipx,shipy,shipz
     !neighbour threshold, super particle mass, grid length, neighbour volume
-    real(kind=8) :: neighbour_thr,sup_par_mass,grid_length=0.5,neighbour_vol
+    real(kind=8) :: neighbour_thr,sup_par_mass,grid_length=0.5,neighbour_vol_real
     !environment variables
     character(len=100) :: env_buffer
     !data for request
@@ -107,7 +107,7 @@ contains
         sup_par_num=nodes(1)*nodes(2)*nodes(3)*pbuf_size
         real_par_num_per_sup_par=simu_vol*1d6*ion_density/sup_par_num
         sup_par_mass=ion_mass*real_par_num_per_sup_par
-        neighbour_vol=4/3*pi*(neighbour_thr*grid_length)**3
+        neighbour_vol_real=4.0/3*pi*(neighbour_thr)**3
         if (myid.eq.0) then
             print *, "cv=",cv
             print *, "wp=",wp
@@ -146,7 +146,7 @@ contains
             req_params(7)=v_dim
             req_params(8)=nprocess
             req_params_real(1)=time_ratio
-            print*,"req_params_real(1)=",req_params_real(1)
+            req_params_real(2)=neighbour_vol_real
             call CTCAR_sendreq_withreal8(req_params,size(req_params),req_params_real,size(req_params_real))
         end if
         flag(1)=1
@@ -207,19 +207,22 @@ contains
                 v_sum_size(species)=v_sum_size(species)+1
                 !check energy
                 if (energy.gt.0) then
-                    energy_index=nint(10*log10(energy))
+                    energy_index=int(10*log10(energy))
                     !check boundary
                     energy_index=max(energy_index,lbound(num_par, 1))
                     energy_index=min(energy_index,ubound(num_par, 1))
-                    num_par(energy_index,species)=num_par(energy_index,species)+1
+                    !switch this line to change unit of histogram
+                    !...+energy: [eV/m^3/eV]
+                    !...+1: [1/m^3/eV]
+                    num_par(energy_index,species)=num_par(energy_index,species)+energy
                 end if
                 do j=1,v_dim
                     if (v(j).gt.0) then
-                        energy_index=nint(10*log10(v(j)))
+                        energy_index=int(10*log10(v(j)))
                         !check boundary
                         energy_index=max(energy_index,lbound(num_par_v, 1))
                         energy_index=min(energy_index,ubound(num_par_v, 1))
-                        num_par_v(energy_index,j,species)=num_par_v(energy_index,j,species)+1
+                        num_par_v(energy_index,j,species)=num_par_v(energy_index,j,species)+v(j)
                     end if
                 end do
             end if

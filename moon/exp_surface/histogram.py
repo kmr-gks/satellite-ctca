@@ -26,7 +26,7 @@ if 'OUTPUT_FILE_NAME' in os.environ: #called from job script
 else: #default file name if not called from job script
 	file_name="output.csv"
 
-colorbar_label='number of actual particles'
+colorbar_label='Energy flux [eV/m^2/s/eV]'
 dpi=600
 
 #load data from file
