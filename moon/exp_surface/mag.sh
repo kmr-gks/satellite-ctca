@@ -59,3 +59,4 @@ echo "Running python script with $OUTPUT_DIR_NAME"
 python ../histogram.py 
 
 date
+mv "../mag.sh.${SLURM_JOB_ID}.out" .
