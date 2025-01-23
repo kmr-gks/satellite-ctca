@@ -26,7 +26,8 @@ if 'OUTPUT_FILE_NAME' in os.environ: #called from job script
 else: #default file name if not called from job script
 	file_name="output.csv"
 
-colorbar_label='Energy flux [eV/$\mathrm{m}^2$/s/eV]'
+colorbar_label_energy='Energy flux [eV/$\mathrm{m}^2$/s/eV]'
+colorbar_label_vel='Velocity Distribution'
 dpi=600
 
 #load data from file
@@ -44,7 +45,8 @@ if df_non0.empty:
 	count_min, count_max = 1,10
 else:
 	count_min, count_max = df_non0[column].agg(['min', 'max'])
-time_min, time_max = df_all['time'].agg(['min', 'max'])
+time_min = 0
+time_max = df_all['time'].max()
 energy_min, energy_max = df_non0['energy(10*log10eV)'].agg(['min', 'max'])
 
 df_allpar = df_all[
@@ -63,7 +65,7 @@ save_hist2d(axes[1], df_ele, column, description+"(electron)")
 fig.supxlabel(xlabel)
 fig.supylabel(ylabel)
 cbar=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=axes.ravel().tolist(), aspect=25, location="right", pad=0.1)
-cbar.set_label(colorbar_label)
+cbar.set_label(colorbar_label_energy)
 plt.savefig(description, dpi=dpi)
 
 #save histograms for velocity
@@ -91,7 +93,7 @@ df_ele, df_ion = df_allpar[df_allpar['species'] == 1], df_allpar[df_allpar['spec
 #save histograms for velocity
 for i in range(3):
 	fig, axes = plt.subplots(2, 2, figsize=(6, 5), sharey="row", constrained_layout=True)
-	norm = mpl.colors.LogNorm(vmin=count_min, vmax=count_max)
+	norm = mpl.colors.LogNorm(vmin=count_min, vmax=1)
 	cmap = plt.get_cmap()
 	save_hist2d(axes[0,0], df_ion, columns[i], descriptions[i]+"(ion)")
 	save_hist2d(axes[0,1], df_ele, columns[i], descriptions[i]+"(electron)")
@@ -100,5 +102,5 @@ for i in range(3):
 	fig.supxlabel(xlabel)
 	fig.supylabel(ylabel)
 	cbar=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=axes.ravel().tolist(), aspect=25, location="right", pad=0.1)
-	cbar.set_label(colorbar_label)
+	cbar.set_label(colorbar_label_vel)
 	plt.savefig(file_name[i], dpi=dpi)

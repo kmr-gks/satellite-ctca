@@ -22,12 +22,12 @@ module load hdf5/1.12.2_intel-2022.3-impi
 export EMSES_DEBUG=no
 
 #set ship position and neighbour threshold [m]
-export SHIP_X_FROM=0
-export SHIP_X_TO=256
-export SHIP_Y_FROM=64
-export SHIP_Y_TO=64
-export SHIP_Z_FROM=64
-export SHIP_Z_TO=64
+export SHIP_X_FROM=64
+export SHIP_X_TO=64
+export SHIP_Y_FROM=0
+export SHIP_Y_TO=128
+export SHIP_Z_FROM=24
+export SHIP_Z_TO=24
 export NEIGHBOUR_THR=1
 
 #for python script after simulation

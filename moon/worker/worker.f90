@@ -41,10 +41,10 @@ program worker
   integer finished_rank,waiting_rank
   !number of super particles per time(sec), energy(log10 eV), and species(1or2)
   integer,allocatable    :: num_par(:,:),num_par_v(:,:,:)
-  integer(kind=8),allocatable :: num_par_total(:,:,:),num_par_v_total(:,:,:,:)
+  real(kind=8),allocatable :: num_par_total(:,:,:),num_par_v_total(:,:,:,:)
   !step_csv time-step number for csv output
   integer :: num_par_id,num_par_v_id,energy_bin,spec_num,v_dim,nstep,step_csv=100
-  character(len=100) :: format_string
+  character(len=1000) :: format_string
 !
   call CTCAW_init(0, 1)
   call MPI_Comm_size(CTCA_subcomm, nprocs, ierr)
@@ -129,16 +129,18 @@ program worker
   num_par_v_total=num_par_v_total/(nstep/step_csv)
   !devide by volume of observation range
   num_par_total=num_par_total/neighbour_vol_real
-  num_par_v_total=num_par_v_total/neighbour_vol_real
+  !normalize
+  num_par_v_total = num_par_v_total / (spread(sum(num_par_v_total, dim=1), dim=1, ncopies=size(num_par_v_total, 1))+1)
+
   !devide by extent of energy bin in log10 scale
   do i=-energy_bin,energy_bin
     energy_extent=10**((i+1)/10.0)-10**(i/10.0)
     !print*,"energy_extent=10^",(i+1)/10.0-"10^",i/10.0,"=",10**((i+1)/10.0),"-",10**(i/10.0),"=",energy_extent
     num_par_total(i,:,:) = num_par_total(i,:,:)/energy_extent
-    num_par_v_total(i,:,:,:) = num_par_v_total(i,:,:,:)/energy_extent
   end do
   ! create dynamic format string
-  format_string = '( *(G0, ",", I4, ",", I4, ",", I,' // repeat('",", I,', v_dim) // '/) )'
+  format_string = '( *(G0, ",", I4, ",", I4, ",", G0,' // repeat('",", G0,', v_dim) // '/) )'
+  print *, "format_string=", format_string
   write(output_file_unit, format_string) &
     (((real(i)/step_csv*nstep/time_ratio, j, k, num_par_total(k, j, i), &
         (num_par_v_total(k, l, j, i), l = 1, v_dim), &

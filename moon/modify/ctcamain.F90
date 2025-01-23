@@ -222,7 +222,7 @@ contains
                         !check boundary
                         energy_index=max(energy_index,lbound(num_par_v, 1))
                         energy_index=min(energy_index,ubound(num_par_v, 1))
-                        num_par_v(energy_index,j,species)=num_par_v(energy_index,j,species)+v(j)
+                        num_par_v(energy_index,j,species)=num_par_v(energy_index,j,species)+1
                     end if
                 end do
             end if
