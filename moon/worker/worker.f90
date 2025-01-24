@@ -30,7 +30,7 @@ program worker
   real(kind=8) :: req_params_real(10)
   integer :: pbuf_size, pbuf_mem, real_par_num_per_sup_par
   !time is real unit
-  real(kind=8) :: grid_length=0.5,time_ratio,time,neighbour_vol_real, energy_extent
+  real(kind=8) :: grid_length,time_ratio,time,neighbour_vol_real, energy_extent
   !flag of completion
   integer :: flag_id,flag_size,flag(10)
   !output file of energy
@@ -65,7 +65,8 @@ program worker
   print*,"req_params_real(1)=",req_params_real(1)
   time_ratio=req_params_real(1)
   neighbour_vol_real=req_params_real(2)
-  print*, "neighbour_vol_real=",neighbour_vol_real,"[m^3]"
+  grid_length=req_params_real(3)
+  print*, "neighbour_vol_real=",neighbour_vol_real,"[m^3]", "grid_length=",grid_length,"[m]"
   !allocate energy array
   energy_bin=req_params(3)
   spec_num=req_params(4)

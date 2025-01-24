@@ -41,7 +41,7 @@ module m_ctcamain
     !position of satellite (emses unit)
     real(kind=8) :: ship_x_from,ship_x_to,ship_y_from,ship_y_to,ship_z_from,ship_z_to,shipx,shipy,shipz
     !neighbour threshold, super particle mass, grid length, neighbour volume
-    real(kind=8) :: neighbour_thr,sup_par_mass,grid_length=0.5,neighbour_vol_real
+    real(kind=8) :: neighbour_thr,sup_par_mass,grid_length,neighbour_vol_real
     !environment variables
     character(len=100) :: env_buffer
     !data for request
@@ -75,6 +75,8 @@ contains
         call CTCAR_regarea_int(num_par_v,size(num_par_v),num_par_v_id)
 
         ! set parameters from environment variables
+        call get_environment_variable("GRID_LENGTH",env_buffer)
+        read(env_buffer,*) grid_length
         call get_environment_variable("SHIP_X_FROM",env_buffer)
         read(env_buffer,*) ship_x_from
         call get_environment_variable("SHIP_X_TO",env_buffer)
@@ -147,6 +149,7 @@ contains
             req_params(8)=nprocess
             req_params_real(1)=time_ratio
             req_params_real(2)=neighbour_vol_real
+            req_params_real(3)=grid_length
             call CTCAR_sendreq_withreal8(req_params,size(req_params),req_params_real,size(req_params_real))
         end if
         flag(1)=1
