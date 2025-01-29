@@ -31,6 +31,9 @@ export SHIP_Z_FROM=30
 export SHIP_Z_TO=30
 export NEIGHBOUR_THR=1
 
+#set histogram parameters (1 for yes, 0 for no)
+export CORRECT_BY_BIN_WIDTH=1
+
 #for python script after simulation
 export OUTPUT_DIR_NAME="${SLURM_JOB_ID}.(${SHIP_X_FROM},${SHIP_Y_FROM},${SHIP_Z_FROM})-(${SHIP_X_TO},${SHIP_Y_TO},${SHIP_Z_TO})t${NEIGHBOUR_THR}.out"
 export OUTPUT_FILE_NAME="output.csv"

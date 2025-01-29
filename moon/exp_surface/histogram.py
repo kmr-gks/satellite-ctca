@@ -21,12 +21,16 @@ def save_hist2d(axe, df, column, title):
 	axe.yaxis.set_major_formatter(FuncFormatter(log_formatter))
 	return im
 
-if 'OUTPUT_FILE_NAME' in os.environ: #called from job script
-	file_name = os.environ["OUTPUT_FILE_NAME"]
-else: #default file name if not called from job script
-	file_name="output.csv"
+#default file name: output.csv
+file_name = os.environ.get("OUTPUT_FILE_NAME", "output.csv")
 
-colorbar_label_energy='Energy flux [eV/$\mathrm{m}^2$/s/eV]'
+#whether correct data by bin width
+correct_by_bin_width = os.environ.get("CORRECT_BY_BIN_WIDTH") == "1"
+
+if correct_by_bin_width:
+	colorbar_label_energy='Energy flux [/$\mathrm{m}^2$/s/eV]'
+else:
+	colorbar_label_energy='Energy flux [eV/$\mathrm{m}^2$/s/eV]'
 colorbar_label_vel='Velocity Distribution'
 dpi=600
 

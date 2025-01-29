@@ -42,6 +42,7 @@ module m_ctcamain
     real(kind=8) :: ship_x_from,ship_x_to,ship_y_from,ship_y_to,ship_z_from,ship_z_to,shipx,shipy,shipz
     !neighbour threshold, super particle mass, grid length, neighbour volume
     real(kind=8) :: neighbour_thr,sup_par_mass,grid_length,neighbour_vol_real
+    integer correct_by_bin_width
     !environment variables
     character(len=100) :: env_buffer
     !data for request
@@ -91,6 +92,8 @@ contains
         read(env_buffer,*) ship_z_to
         call get_environment_variable("NEIGHBOUR_THR",env_buffer)
         read(env_buffer,*) neighbour_thr
+        call get_environment_variable("CORRECT_BY_BIN_WIDTH",env_buffer)
+        read(env_buffer,*) correct_by_bin_width
 
         ! get plasma frequency for ion
         wp_ion_emses=wp(2)
@@ -214,10 +217,14 @@ contains
                     !check boundary
                     energy_index=max(energy_index,lbound(num_par, 1))
                     energy_index=min(energy_index,ubound(num_par, 1))
-                    !switch this line to change unit of histogram
-                    !...+energy: [eV/m^3/eV]
-                    !...+1: [1/m^3/eV]
-                    num_par(energy_index,species)=num_par(energy_index,species)+energy
+                    !switch to change unit of histogram
+                    if (correct_by_bin_width.eq.1) then
+                        ![1/m^3/eV]
+                        num_par(energy_index,species)=num_par(energy_index,species)+1
+                    else
+                        ![eV/m^3/eV]
+                        num_par(energy_index,species)=num_par(energy_index,species)+energy
+                    end if
                 end if
                 do j=1,v_dim
                     if (v(j).gt.0) then
