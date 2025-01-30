@@ -49,7 +49,7 @@ if df_non0.empty:
 	count_min, count_max = 1,10
 else:
 	count_min, count_max = df_non0[column].agg(['min', 'max'])
-time_min = 0
+time_min = df_all['time'].min()
 time_max = df_all['time'].max()
 energy_min, energy_max = df_non0['energy(10*log10eV)'].agg(['min', 'max'])
 

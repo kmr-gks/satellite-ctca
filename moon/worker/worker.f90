@@ -43,7 +43,7 @@ program worker
   integer,allocatable    :: num_par(:,:),num_par_v(:,:,:)
   real(kind=8),allocatable :: num_par_total(:,:,:),num_par_v_total(:,:,:,:)
   !step_csv time-step number for csv output
-  integer :: num_par_id,num_par_v_id,energy_bin,spec_num,v_dim,nstep,step_csv=100
+  integer :: num_par_id,num_par_v_id,energy_bin,spec_num,v_dim,nstep,step_csv=100,step_from,step_to
   character(len=1000) :: format_string
 !
   call CTCAW_init(0, 1)
@@ -74,6 +74,8 @@ program worker
   real_par_num_per_sup_par=req_params(6)
   v_dim=req_params(7)
   nprocs_reqester=req_params(8)
+  step_from=req_params(9)
+  step_to=req_params(10)
   allocate(num_par(-energy_bin:energy_bin,spec_num))
   allocate(num_par_total(-energy_bin:energy_bin,spec_num,step_csv))
   num_par_total=0
@@ -95,19 +97,25 @@ program worker
         !read energy from pbuf
         step=flag(5)
         time=step/time_ratio
-
-        call CTCAW_readarea_int(num_par_id,from_rank,0,size(num_par),num_par)
-        call CTCAW_readarea_int(num_par_v_id,from_rank,0,size(num_par_v),num_par_v)
+        if (step_from.lt.step.and.step.le.step_to) then
+          call CTCAW_readarea_int(num_par_id,from_rank,0,size(num_par),num_par)
+          call CTCAW_readarea_int(num_par_v_id,from_rank,0,size(num_par_v),num_par_v)
+        end if
         !set flag
         flag(1)=1
         !time up
         call CTCAW_writearea_int(flag_id,from_rank,0,flag_size,flag)
-        step=ceiling(real(step_csv)*step/nstep)
-        ! Measures for floating point calculation errors
-        step=max(step,1)
-        step=min(step,step_csv)
-        num_par_total(:,:,step)=num_par_total(:,:,step)+num_par(:,:)
-        num_par_v_total(:,:,:,step)=num_par_v_total(:,:,:,step)+num_par_v(:,:,:)
+        if (step_from.lt.step.and.step.le.step_to) then
+          if (flag(2).eq.0) then
+            print*,"from_rank=",flag(2),"step=",step,"index=",ceiling(real(step_csv)*(step-step_from)/(step_to-step_from+1))
+          end if
+          step=ceiling(real(step_csv)*(step-step_from)/(step_to-step_from+1))
+          ! Measures for floating point calculation errors
+          step=max(step,1)
+          step=min(step,step_csv)
+          num_par_total(:,:,step)=num_par_total(:,:,step)+num_par(:,:)
+          num_par_v_total(:,:,:,step)=num_par_v_total(:,:,:,step)+num_par_v(:,:,:)
+        end if
       else if (flag(1).eq.1) then
         !wait for requester
         waiting_rank=waiting_rank+1
@@ -141,9 +149,8 @@ program worker
   end do
   ! create dynamic format string
   format_string = '( *(G0, ",", I4, ",", I4, ",", G0,' // repeat('",", G0,', v_dim) // '/) )'
-  print *, "format_string=", format_string
   write(output_file_unit, format_string) &
-    (((real(i)/step_csv*nstep/time_ratio, j, k, num_par_total(k, j, i), &
+    ((((real(i)/step_csv*(step_to-step_from+1)+step_from)/time_ratio, j, k, num_par_total(k, j, i), &
         (num_par_v_total(k, l, j, i), l = 1, v_dim), &
         k = -energy_bin, energy_bin), j = 1, spec_num), i = 1, step_csv)
 

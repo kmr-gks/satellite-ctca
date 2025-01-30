@@ -42,7 +42,7 @@ module m_ctcamain
     real(kind=8) :: ship_x_from,ship_x_to,ship_y_from,ship_y_to,ship_z_from,ship_z_to,shipx,shipy,shipz
     !neighbour threshold, super particle mass, grid length, neighbour volume
     real(kind=8) :: neighbour_thr,sup_par_mass,grid_length,neighbour_vol_real
-    integer correct_by_bin_width
+    integer correct_by_bin_width,step_from,step_to
     !environment variables
     character(len=100) :: env_buffer
     !data for request
@@ -94,6 +94,10 @@ contains
         read(env_buffer,*) neighbour_thr
         call get_environment_variable("CORRECT_BY_BIN_WIDTH",env_buffer)
         read(env_buffer,*) correct_by_bin_width
+        call get_environment_variable("STEP_FROM",env_buffer)
+        read(env_buffer,*) step_from
+        call get_environment_variable("STEP_TO",env_buffer)
+        read(env_buffer,*) step_to
 
         ! get plasma frequency for ion
         wp_ion_emses=wp(2)
@@ -150,6 +154,8 @@ contains
             req_params(6)=real_par_num_per_sup_par
             req_params(7)=v_dim
             req_params(8)=nprocess
+            req_params(9)=step_from
+            req_params(10)=step_to
             req_params_real(1)=time_ratio
             req_params_real(2)=neighbour_vol_real
             req_params_real(3)=grid_length
@@ -172,9 +178,12 @@ contains
         v_sum_size(:)=0
 
         !set position of satellite
-        shipx=ship_x_from+(ship_x_to-ship_x_from)*float(istep)/float(nstep)
-        shipy=ship_y_from+(ship_y_to-ship_y_from)*float(istep)/float(nstep)
-        shipz=ship_z_from+(ship_z_to-ship_z_from)*float(istep)/float(nstep)
+        shipx=ship_x_from+(ship_x_to-ship_x_from)*float(istep-step_from)/float(step_to-step_from)
+        shipy=ship_y_from+(ship_y_to-ship_y_from)*float(istep-step_from)/float(step_to-step_from)
+        shipz=ship_z_from+(ship_z_to-ship_z_from)*float(istep-step_from)/float(step_to-step_from)
+        if (myid.eq.0.and.step_from.lt.istep.and.istep.lt.step_to) then
+            print *,"ship position=",shipx,shipy,shipz
+        end if
 
         dist(:)=sqrt((pbuf(:)%x-shipx)**2+(pbuf(:)%y-shipy)**2+(pbuf(:)%z-shipz)**2)
         
@@ -193,7 +202,7 @@ contains
         pbuf_valid_size=sum(totalp)
         energy_size=0
         do i=1, pbuf_valid_size
-            if (dist(i).lt.neighbour_thr) then
+            if (dist(i).lt.neighbour_thr.and.step_from.lt.istep.and.istep.lt.step_to) then
                 energy_size=energy_size+1
                 species=pbuf(i)%spec
                 !energy(eV)
