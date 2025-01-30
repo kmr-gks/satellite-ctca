@@ -7,6 +7,7 @@ mpiemses3D
 #cotocoa output
 out
 output*
+*.csv
 *.gif
 *.png
 *.mp4
