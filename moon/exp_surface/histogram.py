@@ -10,7 +10,7 @@ import os
 def log_formatter(value, tick_number):
     return f"$10^{{{value/10}}}$"
 
-def save_hist2d(axe, df, column, title):
+def create_hist2d(axe, df, column, title):
 	#csv data is binned by time and energy, so we can use pivot_table to create a 2D histogram
 	hist_data = df.pivot_table(index='energy(10*log10eV)', columns='time', values=column, aggfunc=np.sum, fill_value=0)
 	#plot histogram
@@ -19,10 +19,10 @@ def save_hist2d(axe, df, column, title):
 	#axe.text(0.5, 0.05, title, transform=axe.transAxes, fontsize=12, va='bottom', ha='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'))
 	#set scale for energy(10*log10eV -> linear scale)
 	axe.yaxis.set_major_formatter(FuncFormatter(log_formatter))
-	return im
 
 #default file name: output.csv
 file_name = os.environ.get("OUTPUT_FILE_NAME", "output.csv")
+input_without_extension = os.path.splitext(file_name)[0]
 
 #whether correct data by bin width
 correct_by_bin_width = os.environ.get("CORRECT_BY_BIN_WIDTH") == "1"
@@ -64,13 +64,13 @@ fig, axes = plt.subplots(1, 2, figsize=(6, 2.5), sharex="col", sharey="row", con
 norm = mpl.colors.LogNorm(vmin=count_min, vmax=count_max)
 cmap = plt.get_cmap()
 
-save_hist2d(axes[0], df_ion, column, description+"(ion)")
-save_hist2d(axes[1], df_ele, column, description+"(electron)")
+create_hist2d(axes[0], df_ion, column, description+"(ion)")
+create_hist2d(axes[1], df_ele, column, description+"(electron)")
 fig.supxlabel(xlabel)
 fig.supylabel(ylabel)
 cbar=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=axes.ravel().tolist(), aspect=25, location="right", pad=0.1)
 cbar.set_label(colorbar_label_energy)
-plt.savefig(description, dpi=dpi)
+plt.savefig(input_without_extension+description, dpi=dpi)
 
 #save histograms for velocity
 columns = ['vx-p', 'vy-p', 'vz-p', 'vx-n', 'vy-n', 'vz-n']
@@ -99,12 +99,12 @@ for i in range(3):
 	fig, axes = plt.subplots(2, 2, figsize=(6, 5), sharey="row", constrained_layout=True)
 	norm = mpl.colors.LogNorm(vmin=count_min, vmax=1)
 	cmap = plt.get_cmap()
-	save_hist2d(axes[0,0], df_ion, columns[i], descriptions[i]+"(ion)")
-	save_hist2d(axes[0,1], df_ele, columns[i], descriptions[i]+"(electron)")
-	save_hist2d(axes[1,0], df_ion, columns[i+3], descriptions[i+3]+"(ion)")
-	save_hist2d(axes[1,1], df_ele, columns[i+3], descriptions[i+3]+"(electron)")
+	create_hist2d(axes[0,0], df_ion, columns[i], descriptions[i]+"(ion)")
+	create_hist2d(axes[0,1], df_ele, columns[i], descriptions[i]+"(electron)")
+	create_hist2d(axes[1,0], df_ion, columns[i+3], descriptions[i+3]+"(ion)")
+	create_hist2d(axes[1,1], df_ele, columns[i+3], descriptions[i+3]+"(electron)")
 	fig.supxlabel(xlabel)
 	fig.supylabel(ylabel)
 	cbar=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=axes.ravel().tolist(), aspect=25, location="right", pad=0.1)
 	cbar.set_label(colorbar_label_vel)
-	plt.savefig(file_name[i], dpi=dpi)
+	plt.savefig(input_without_extension+file_name[i], dpi=dpi)
