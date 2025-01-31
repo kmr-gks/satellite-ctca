@@ -40,6 +40,8 @@ module m_ctcamain
     integer :: flag_id,flag_size,flag(10)
     !position of satellite (emses unit)
     real(kind=8) :: ship_x_from,ship_x_to,ship_y_from,ship_y_to,ship_z_from,ship_z_to,shipx,shipy,shipz
+    !index of env_buffer
+    integer :: p1, p2, p3, p4, p5
     !neighbour threshold, super particle mass, grid length, neighbour volume
     real(kind=8) :: neighbour_thr,sup_par_mass,grid_length,neighbour_vol_real
     integer correct_by_bin_width,step_from,step_to
@@ -78,18 +80,6 @@ contains
         ! set parameters from environment variables
         call get_environment_variable("GRID_LENGTH",env_buffer)
         read(env_buffer,*) grid_length
-        call get_environment_variable("SHIP_X_FROM",env_buffer)
-        read(env_buffer,*) ship_x_from
-        call get_environment_variable("SHIP_X_TO",env_buffer)
-        read(env_buffer,*) ship_x_to
-        call get_environment_variable("SHIP_Y_FROM",env_buffer)
-        read(env_buffer,*) ship_y_from
-        call get_environment_variable("SHIP_Y_TO",env_buffer)
-        read(env_buffer,*) ship_y_to
-        call get_environment_variable("SHIP_Z_FROM",env_buffer)
-        read(env_buffer,*) ship_z_from
-        call get_environment_variable("SHIP_Z_TO",env_buffer)
-        read(env_buffer,*) ship_z_to
         call get_environment_variable("NEIGHBOUR_THR",env_buffer)
         read(env_buffer,*) neighbour_thr
         call get_environment_variable("CORRECT_BY_BIN_WIDTH",env_buffer)
@@ -98,6 +88,20 @@ contains
         read(env_buffer,*) step_from
         call get_environment_variable("STEP_TO",env_buffer)
         read(env_buffer,*) step_to
+
+        call get_environment_variable("SHIP_COORD", env_buffer)
+        !format: "(x1,y1,z1)-(x2,y2,z2)"
+        env_buffer = adjustl(env_buffer)  ! remove leading spaces
+        call replace_chars(env_buffer, '(', ' ')
+        call replace_chars(env_buffer, ')', ' ')
+        call replace_chars(env_buffer, '-', ' ')
+        call replace_chars(env_buffer, ',', ' ')
+        read(env_buffer, *) ship_x_from, ship_y_from, ship_z_from, ship_x_to, ship_y_to, ship_z_to
+        if (myid.eq.0) then
+            print *, "Ship Coordinates:"
+            print *, "From: (", ship_x_from, ",", ship_y_from, ",", ship_z_from, ")"
+            print *, "To:   (", ship_x_to, ",", ship_y_to, ",", ship_z_to, ")"
+        end if
 
         ! get plasma frequency for ion
         wp_ion_emses=wp(2)
@@ -268,5 +272,14 @@ contains
     flag(1)=2
     if (myid.eq.0) print *, "requester finished:",myid
     end subroutine cotocoa_finalize
+
+    subroutine replace_chars(str, old, new)
+        character(len=*), intent(inout) :: str
+        character(len=1), intent(in) :: old, new
+        integer :: i
+        do i = 1, len_trim(str)
+            if (str(i:i) == old) str(i:i) = new
+        end do
+    end subroutine replace_chars
 
 end module m_ctcamain

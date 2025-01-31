@@ -23,16 +23,11 @@ export EMSES_DEBUG=no
 
 #set ship position and neighbour threshold [m]
 export GRID_LENGTH=0.5
-export SHIP_X_FROM=0
-export SHIP_X_TO=16
-export SHIP_Y_FROM=8
-export SHIP_Y_TO=8
-export SHIP_Z_FROM=30
-export SHIP_Z_TO=30
+export SHIP_COORD="(0,8,30)-(16,8,30)"
 
 #step range (step unit)
 export STEP_FROM=1
-export STEP_TO=10000
+export STEP_TO=1000
 
 export NEIGHBOUR_THR=1
 
@@ -40,9 +35,8 @@ export NEIGHBOUR_THR=1
 export CORRECT_BY_BIN_WIDTH=0
 
 #for python script after simulation
-export OUTPUT_DIR_NAME="${SLURM_JOB_ID}.(${SHIP_X_FROM},${SHIP_Y_FROM},${SHIP_Z_FROM})-(${SHIP_X_TO},${SHIP_Y_TO},${SHIP_Z_TO})t${NEIGHBOUR_THR}.out"
-export OUTPUT_FILE_NAME="(${SHIP_X_FROM},${SHIP_Y_FROM},${SHIP_Z_FROM})-(${SHIP_X_TO},${SHIP_Y_TO},${SHIP_Z_TO}).csv"
-export JOB_OUT_FILE="job.sh.${SLURM_JOB_ID}.out"
+export OUTPUT_DIR_NAME="${SLURM_JOB_ID}.${SHIP_COORD}.out"
+export OUTPUT_FILE_NAME="${SHIP_COORD}.csv"
 
 echo "output file: $OUTPUT_DIR_NAME"
 mkdir $OUTPUT_DIR_NAME
