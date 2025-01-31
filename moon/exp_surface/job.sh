@@ -22,14 +22,14 @@ module load hdf5/1.12.2_intel-2022.3-impi
 export EMSES_DEBUG=no
 
 #set ship position and neighbour threshold [m]
-export GRID_LENGTH=0.5
 export SHIP_COORD="(0,8,30)-(16,8,30)"
+
+export GRID_LENGTH=0.5
+export NEIGHBOUR_THR=1
 
 #step range (step unit)
 export STEP_FROM=1
-export STEP_TO=1000
-
-export NEIGHBOUR_THR=1
+export STEP_TO=10000
 
 #set histogram parameters (1 for yes, 0 for no)
 export CORRECT_BY_BIN_WIDTH=0
