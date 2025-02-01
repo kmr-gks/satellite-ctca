@@ -39,8 +39,8 @@ module m_ctcamain
     !flag of completion
     integer :: flag_id,flag_size,flag(10)
     !position of satellite (emses unit)
-    integer :: ship_num=2
-    real(kind=8) :: ship_x_from(2),ship_x_to(2),ship_y_from(2),ship_y_to(2),ship_z_from(2),ship_z_to(2),shipx(2),shipy(2),shipz(2)
+    integer :: ship_num
+    real(kind=8),allocatable :: ship_x_from(:),ship_x_to(:),ship_y_from(:),ship_y_to(:),ship_z_from(:),ship_z_to(:),shipx(:),shipy(:),shipz(:)
     !neighbour threshold, super particle mass, grid length, neighbour volume
     real(kind=8) :: neighbour_thr,sup_par_mass,grid_length,neighbour_vol_real
     integer correct_by_bin_width,step_from,step_to
@@ -67,16 +67,9 @@ contains
 
         call MPI_Comm_size(CTCA_subcomm, nprocess, ierr)
 
-        pbuf_size=size(pbuf)
-        flag_size = size(flag)
-        allocate(dist(pbuf_size,ship_num))
-        allocate(num_par(-energy_bin:energy_bin,spec_num,ship_num))
-        allocate(num_par_v(-energy_bin:energy_bin,v_dim,spec_num,ship_num))
-        call CTCAR_regarea_int(flag,flag_size,flag_id)
-        call CTCAR_regarea_int(num_par,size(num_par),num_par_id)
-        call CTCAR_regarea_int(num_par_v,size(num_par_v),num_par_v_id)
-
         ! set parameters from environment variables
+        call get_environment_variable("SHIP_NUM",env_buffer)
+        read(env_buffer,*) ship_num
         call get_environment_variable("GRID_LENGTH",env_buffer)
         read(env_buffer,*) grid_length
         call get_environment_variable("NEIGHBOUR_THR",env_buffer)
@@ -88,20 +81,26 @@ contains
         call get_environment_variable("STEP_TO",env_buffer)
         read(env_buffer,*) step_to
 
+        pbuf_size=size(pbuf)
+        flag_size = size(flag)
+        allocate(dist(pbuf_size,ship_num))
+        allocate(num_par(-energy_bin:energy_bin,spec_num,ship_num))
+        allocate(num_par_v(-energy_bin:energy_bin,v_dim,spec_num,ship_num))
+        allocate(ship_x_from(ship_num),ship_x_to(ship_num),ship_y_from(ship_num),ship_y_to(ship_num),ship_z_from(ship_num),ship_z_to(ship_num),shipx(ship_num),shipy(ship_num),shipz(ship_num))
+        call CTCAR_regarea_int(flag,flag_size,flag_id)
+        call CTCAR_regarea_int(num_par,size(num_par),num_par_id)
+        call CTCAR_regarea_int(num_par_v,size(num_par_v),num_par_v_id)
+        
         do i=1,ship_num
             write(env_name, "(A,I0)") "SHIP_COORD", i
             call get_environment_variable(env_name, env_buffer)
+            print *, "SHIP_COORD=", env_buffer
             !format: "(x1,y1,z1)-(x2,y2,z2)"
             env_buffer = adjustl(env_buffer)  ! remove leading spaces
             call replace_chars(env_buffer, ")-(", ",")
             call replace_chars(env_buffer, "(", " ")
             call replace_chars(env_buffer, ")", " ")
             read(env_buffer, *) ship_x_from(i), ship_y_from(i), ship_z_from(i), ship_x_to(i), ship_y_to(i), ship_z_to(i)
-            if (myid.eq.0) then
-                print *, "Ship Coordinates:"
-                print *, "From: (", ship_x_from(i), ",", ship_y_from(i), ",", ship_z_from(i), ")"
-                print *, "To:   (", ship_x_to(i), ",", ship_y_to(i), ",", ship_z_to(i), ")"
-            end if
         end do
 
         ! get plasma frequency for ion
@@ -151,7 +150,7 @@ contains
         neighbour_thr=neighbour_thr*len_ratio
         !send request
         if (myid.eq.0) then
-            req_params(1)=pbuf_size
+            req_params(1)=ship_num
             req_params(2)=-energy_bin
             req_params(3)=energy_bin
             req_params(4)=spec_num
@@ -267,10 +266,9 @@ contains
         end do
         !ランクが保有する粒子のうち衛星に近いものの速度成分の平均
         do i=1,ship_num
-            if (v_sum_size(1,i).eq.0) v_sum_size(1,i)=1
-            if (v_sum_size(2,i).eq.0) v_sum_size(2,i)=1
-            v_avg(1,:,i)=v_sum(1,:,i)/v_sum_size(1,i)
-            v_avg(2,:,i)=v_sum(2,:,i)/v_sum_size(2,i)
+            do j=1,spec_num
+                v_avg(j,:,i)=v_sum(j,:,i)/max(v_sum_size(j,i),1)
+            end do
         end do
         !print *,"step",istep,"rank",myid,"avg_v=",v_avg
     end subroutine cotocoa_mainstep
@@ -295,22 +293,18 @@ contains
         temp = ""
         out_pos = 1
         pos = index(str, old)
-    
         do while (pos > 0)
             !Copy the part before the replacement target
             temp(out_pos:out_pos + pos - 2) = str(1:pos - 1)
             out_pos = out_pos + pos - 1
-    
             !Copy the string to be replaced
             temp(out_pos:out_pos + len_new - 1) = new
             out_pos = out_pos + len_new
-    
             !Skip replaced part and search next
             str = str(pos + len_old:)
             len_str = len_trim(str)
             pos = index(str, old)
         end do
-    
         !Copy the rest of the string
         temp(out_pos:out_pos + len_str - 1) = str
         str = temp

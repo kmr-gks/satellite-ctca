@@ -32,12 +32,12 @@ program worker
   !time is real unit
   real(kind=8) :: grid_length,time_ratio,time,neighbour_vol_real, energy_extent
   !flag of completion
-  integer :: flag_id,flag_size,flag(10),ship_num=2
+  integer :: flag_id,flag_size,flag(10),ship_num,ship_i
   !output file of energy
-  character(len=100) :: output_file_name,output_file_name2
-  integer :: output_file_unit=10, output_file_unit2=11
-    integer date_time(8)
-    character(len=100) :: date_str(3)
+  character(len=100),allocatable :: output_file_name(:)
+  integer,allocatable :: output_file_unit(:)
+  integer date_time(8)
+  character(len=100) :: env_buffer,env_name
   integer finished_rank,waiting_rank
   !number of super particles per time(sec), energy(log10 eV), and species(1or2), ship number
   integer,allocatable    :: num_par(:,:,:),num_par_v(:,:,:,:)
@@ -52,17 +52,10 @@ program worker
   flag_size = size(flag)
 !
   print*, "worker: ", myrank, " / ", nprocs
-  call get_environment_variable("OUTPUT_FILE_NAME",output_file_name)
-  call get_environment_variable("OUTPUT_FILE_NAME2",output_file_name2)
 ! get area id
   call CTCAW_regarea_int(flag_id)
   call CTCAW_regarea_int(num_par_id)
   call CTCAW_regarea_int(num_par_v_id)
-  !open the output file
-  open(unit=output_file_unit,file=output_file_name, status='replace', action='write',buffered='yes')
-  open(unit=output_file_unit2,file=output_file_name2, status='replace', action='write',buffered='yes')
-  write(output_file_unit,'(A)') "time,species,energy(10*log10eV),par-count,vx-count,vy-count,vz-count,vx-p,vy-p,vz-p,vx-n,vy-n,vz-n"
-  write(output_file_unit2,'(A)') "time,species,energy(10*log10eV),par-count,vx-count,vy-count,vz-count,vx-p,vy-p,vz-p,vx-n,vy-n,vz-n"
   !polling request
   call ctcaw_pollreq_withreal8(from_rank,req_params,size(req_params),req_params_real,size(req_params_real))
   print*,"req_params_real(1)=",req_params_real(1)
@@ -71,6 +64,7 @@ program worker
   grid_length=req_params_real(3)
   print*, "neighbour_vol_real=",neighbour_vol_real,"[m^3]", "grid_length=",grid_length,"[m]"
   !allocate energy array
+  ship_num=req_params(1)
   energy_bin=req_params(3)
   spec_num=req_params(4)
   nstep=req_params(5)
@@ -79,13 +73,25 @@ program worker
   nprocs_reqester=req_params(8)
   step_from=req_params(9)
   step_to=req_params(10)
+  call CTCAW_complete()
   allocate(num_par(-energy_bin:energy_bin,spec_num,ship_num))
   allocate(num_par_total(-energy_bin:energy_bin,spec_num,step_csv,ship_num))
   num_par_total=0
   allocate(num_par_v(-energy_bin:energy_bin,v_dim,spec_num,ship_num))
   allocate(num_par_v_total(-energy_bin:energy_bin,v_dim,spec_num,step_csv,ship_num))
   num_par_v_total=0
-  call CTCAW_complete()
+  !get output file name
+  allocate(output_file_name(ship_num))
+  allocate(output_file_unit(ship_num))
+  do ship_i=1,ship_num
+    write(env_name, "(A,I0)") "OUTPUT_FILE_NAME", ship_i
+    call get_environment_variable(env_name,output_file_name(ship_i))
+    print*,"output_file_name(",ship_i,")=",output_file_name(ship_i)
+    !open the output file
+    output_file_unit(ship_i)=ship_i+10
+    open(unit=output_file_unit(ship_i),file=output_file_name(ship_i), status='replace', action='write',buffered='yes')
+    write(output_file_unit(ship_i),'(A)') "time,species,energy(10*log10eV),par-count,vx-count,vy-count,vz-count,vx-p,vy-p,vz-p,vx-n,vy-n,vz-n"
+  end do
 !
   do while( .true. )
     if( CTCAW_isfin() ) exit
@@ -152,19 +158,16 @@ program worker
   end do
   ! create dynamic format string
   format_string = '( *(G0, ",", I4, ",", I4, ",", G0,' // repeat('",", G0,', v_dim) // '/) )'
-  write(output_file_unit, format_string) &
-    ((((real(i)/step_csv*(step_to-step_from+1)+step_from)/time_ratio, j, k, num_par_total(k, j, i, 1), &
-        (num_par_v_total(k, l, j, i, 1), l = 1, v_dim), &
-        k = -energy_bin, energy_bin), j = 1, spec_num), i = 1, step_csv)
-
-  write(output_file_unit2, format_string) &
-    ((((real(i)/step_csv*(step_to-step_from+1)+step_from)/time_ratio, j, k, num_par_total(k, j, i, 2), &
-        (num_par_v_total(k, l, j, i, 2), l = 1, v_dim), &
-        k = -energy_bin, energy_bin), j = 1, spec_num), i = 1, step_csv)
+  do ship_i=1,ship_num
+    write(output_file_unit(ship_i), format_string) &
+      ((((real(i)/step_csv*(step_to-step_from+1)+step_from)/time_ratio, j, k, num_par_total(k, j, i, ship_i), &
+          (num_par_v_total(k, l, j, i, ship_i), l = 1, v_dim), &
+          k = -energy_bin, energy_bin), j = 1, spec_num), i = 1, step_csv)
+    close(output_file_unit(ship_i))
+  end do
 
   call system("date")
   call CTCAW_finalize()
-  close(output_file_unit)
 !
   stop
 end program worker
