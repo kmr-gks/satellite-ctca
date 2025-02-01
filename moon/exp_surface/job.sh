@@ -22,10 +22,11 @@ module load hdf5/1.12.2_intel-2022.3-impi
 export EMSES_DEBUG=no
 
 #set ship position and neighbour threshold [m]
-export SHIP_NUM=3
-export SHIP_COORD1="(0,8,128)-(16,8,128)"
-export SHIP_COORD2="(0,8,30)-(16,8,30)"
-export SHIP_COORD3="(-8,8,128)-(24,8,128)"
+export SHIP_NUM=4
+export SHIP_COORD1="(-8,8,128)-(24,8,128)"
+export SHIP_COORD2="(0,8,128)-(16,8,128)"
+export SHIP_COORD3="(0,8,64)-(16,8,64)"
+export SHIP_COORD4="(0,8,30)-(16,8,30)"
 
 export GRID_LENGTH=0.5
 export NEIGHBOUR_THR=1
