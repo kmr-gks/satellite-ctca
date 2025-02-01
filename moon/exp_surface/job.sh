@@ -22,7 +22,8 @@ module load hdf5/1.12.2_intel-2022.3-impi
 export EMSES_DEBUG=no
 
 #set ship position and neighbour threshold [m]
-export SHIP_COORD="(0,8,30)-(16,8,30)"
+export SHIP_COORD1="(0,8,30)-(16,8,30)"
+export SHIP_COORD2="(-8,8,128)-(24,8,128)"
 
 export GRID_LENGTH=0.5
 export NEIGHBOUR_THR=1
@@ -35,8 +36,9 @@ export STEP_TO=10000
 export CORRECT_BY_BIN_WIDTH=0
 
 #for python script after simulation
-export OUTPUT_DIR_NAME="${SLURM_JOB_ID}.${SHIP_COORD}.out"
-export OUTPUT_FILE_NAME="${SHIP_COORD}.csv"
+export OUTPUT_DIR_NAME="${SLURM_JOB_ID}.${SHIP_COORD1}.out"
+export OUTPUT_FILE_NAME="${SHIP_COORD1}.csv"
+export OUTPUT_FILE_NAME2="${SHIP_COORD2}.csv"
 
 echo "output file: $OUTPUT_DIR_NAME"
 mkdir $OUTPUT_DIR_NAME
@@ -57,7 +59,8 @@ echo ...done
 mv *.h5 chgacm1 chgacm2 chgmov currnt energy energy1 energy2 ewave icur influx isflux nesc noflux ocur oltime pbody pbodyd pbodyr plasma.out seyield SNAPSHOT1 volt ../output/${SLURM_JOB_ID}/.
 
 echo "Running python script with $OUTPUT_DIR_NAME"
-python ../histogram.py 
+python ../histogram.py ${OUTPUT_FILE_NAME}
+python ../histogram.py ${OUTPUT_FILE_NAME2}
 
 date
 mv "../job.sh.${SLURM_JOB_ID}.out" .

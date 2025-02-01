@@ -32,16 +32,16 @@ program worker
   !time is real unit
   real(kind=8) :: grid_length,time_ratio,time,neighbour_vol_real, energy_extent
   !flag of completion
-  integer :: flag_id,flag_size,flag(10)
+  integer :: flag_id,flag_size,flag(10),ship_num=2
   !output file of energy
-  character(len=100) :: output_file_name
-  integer :: output_file_unit=10
+  character(len=100) :: output_file_name,output_file_name2
+  integer :: output_file_unit=10, output_file_unit2=11
     integer date_time(8)
     character(len=100) :: date_str(3)
   integer finished_rank,waiting_rank
-  !number of super particles per time(sec), energy(log10 eV), and species(1or2)
-  integer,allocatable    :: num_par(:,:),num_par_v(:,:,:)
-  real(kind=8),allocatable :: num_par_total(:,:,:),num_par_v_total(:,:,:,:)
+  !number of super particles per time(sec), energy(log10 eV), and species(1or2), ship number
+  integer,allocatable    :: num_par(:,:,:),num_par_v(:,:,:,:)
+  real(kind=8),allocatable :: num_par_total(:,:,:,:),num_par_v_total(:,:,:,:,:)
   !step_csv time-step number for csv output
   integer :: num_par_id,num_par_v_id,energy_bin,spec_num,v_dim,nstep,step_csv=100,step_from,step_to
   character(len=1000) :: format_string
@@ -53,13 +53,16 @@ program worker
 !
   print*, "worker: ", myrank, " / ", nprocs
   call get_environment_variable("OUTPUT_FILE_NAME",output_file_name)
+  call get_environment_variable("OUTPUT_FILE_NAME2",output_file_name2)
 ! get area id
   call CTCAW_regarea_int(flag_id)
   call CTCAW_regarea_int(num_par_id)
   call CTCAW_regarea_int(num_par_v_id)
   !open the output file
   open(unit=output_file_unit,file=output_file_name, status='replace', action='write',buffered='yes')
+  open(unit=output_file_unit2,file=output_file_name2, status='replace', action='write',buffered='yes')
   write(output_file_unit,'(A)') "time,species,energy(10*log10eV),par-count,vx-count,vy-count,vz-count,vx-p,vy-p,vz-p,vx-n,vy-n,vz-n"
+  write(output_file_unit2,'(A)') "time,species,energy(10*log10eV),par-count,vx-count,vy-count,vz-count,vx-p,vy-p,vz-p,vx-n,vy-n,vz-n"
   !polling request
   call ctcaw_pollreq_withreal8(from_rank,req_params,size(req_params),req_params_real,size(req_params_real))
   print*,"req_params_real(1)=",req_params_real(1)
@@ -76,11 +79,11 @@ program worker
   nprocs_reqester=req_params(8)
   step_from=req_params(9)
   step_to=req_params(10)
-  allocate(num_par(-energy_bin:energy_bin,spec_num))
-  allocate(num_par_total(-energy_bin:energy_bin,spec_num,step_csv))
+  allocate(num_par(-energy_bin:energy_bin,spec_num,ship_num))
+  allocate(num_par_total(-energy_bin:energy_bin,spec_num,step_csv,ship_num))
   num_par_total=0
-  allocate(num_par_v(-energy_bin:energy_bin,v_dim,spec_num))
-  allocate(num_par_v_total(-energy_bin:energy_bin,v_dim,spec_num,step_csv))
+  allocate(num_par_v(-energy_bin:energy_bin,v_dim,spec_num,ship_num))
+  allocate(num_par_v_total(-energy_bin:energy_bin,v_dim,spec_num,step_csv,ship_num))
   num_par_v_total=0
   call CTCAW_complete()
 !
@@ -113,8 +116,8 @@ program worker
           ! Measures for floating point calculation errors
           step=max(step,1)
           step=min(step,step_csv)
-          num_par_total(:,:,step)=num_par_total(:,:,step)+num_par(:,:)
-          num_par_v_total(:,:,:,step)=num_par_v_total(:,:,:,step)+num_par_v(:,:,:)
+          num_par_total(:,:,step,:)=num_par_total(:,:,step,:)+num_par(:,:,:)
+          num_par_v_total(:,:,:,step,:)=num_par_v_total(:,:,:,step,:)+num_par_v(:,:,:,:)
         end if
       else if (flag(1).eq.1) then
         !wait for requester
@@ -145,13 +148,18 @@ program worker
   do i=-energy_bin,energy_bin
     energy_extent=10**((i+1)/10.0)-10**(i/10.0)
     !print*,"energy_extent=10^",(i+1)/10.0-"10^",i/10.0,"=",10**((i+1)/10.0),"-",10**(i/10.0),"=",energy_extent
-    num_par_total(i,:,:) = num_par_total(i,:,:)/energy_extent
+    num_par_total(i,:,:,:) = num_par_total(i,:,:,:)/energy_extent
   end do
   ! create dynamic format string
   format_string = '( *(G0, ",", I4, ",", I4, ",", G0,' // repeat('",", G0,', v_dim) // '/) )'
   write(output_file_unit, format_string) &
-    ((((real(i)/step_csv*(step_to-step_from+1)+step_from)/time_ratio, j, k, num_par_total(k, j, i), &
-        (num_par_v_total(k, l, j, i), l = 1, v_dim), &
+    ((((real(i)/step_csv*(step_to-step_from+1)+step_from)/time_ratio, j, k, num_par_total(k, j, i, 1), &
+        (num_par_v_total(k, l, j, i, 1), l = 1, v_dim), &
+        k = -energy_bin, energy_bin), j = 1, spec_num), i = 1, step_csv)
+
+  write(output_file_unit2, format_string) &
+    ((((real(i)/step_csv*(step_to-step_from+1)+step_from)/time_ratio, j, k, num_par_total(k, j, i, 2), &
+        (num_par_v_total(k, l, j, i, 2), l = 1, v_dim), &
         k = -energy_bin, energy_bin), j = 1, spec_num), i = 1, step_csv)
 
   call system("date")

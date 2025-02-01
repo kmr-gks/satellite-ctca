@@ -31,27 +31,26 @@ module m_ctcamain
     real(kind=8) :: len_ratio,vel_ratio,time_ratio,freq_ratio,ion_density,vel_ratio_k
 
     !distance between satellite and particles, energy density
-    real(kind=8),allocatable :: dist(:)
+    real(kind=8),allocatable :: dist(:,:)
     !size of pbuf,members of pbuf
     integer(kind=8)       :: pbuf_size, pbuf_mem=6
     !area id of pbuf, size of energy
-    integer               :: pbuf_id,species_id,energy_size,i
+    integer               :: pbuf_id,species_id,energy_size,i,j,k
     !flag of completion
     integer :: flag_id,flag_size,flag(10)
     !position of satellite (emses unit)
-    real(kind=8) :: ship_x_from,ship_x_to,ship_y_from,ship_y_to,ship_z_from,ship_z_to,shipx,shipy,shipz
-    !index of env_buffer
-    integer :: p1, p2, p3, p4, p5
+    integer :: ship_num=2
+    real(kind=8) :: ship_x_from(2),ship_x_to(2),ship_y_from(2),ship_y_to(2),ship_z_from(2),ship_z_to(2),shipx(2),shipy(2),shipz(2)
     !neighbour threshold, super particle mass, grid length, neighbour volume
     real(kind=8) :: neighbour_thr,sup_par_mass,grid_length,neighbour_vol_real
     integer correct_by_bin_width,step_from,step_to
     !environment variables
-    character(len=100) :: env_buffer
+    character(len=100) :: env_buffer,env_name
     !data for request
     integer(kind=4) ::req_params(10)
     real(kind=8) :: req_params_real(10)
-    !number of super particles per energy(10*log10eV), and species(1or2)
-    integer,allocatable :: num_par(:,:),num_par_v(:,:,:)
+    !number of super particles per energy(10*log10eV), and species(1or2), ship number
+    integer,allocatable :: num_par(:,:,:),num_par_v(:,:,:,:)
     integer :: num_par_id,num_par_v_id,energy_bin=100,spec_num=2,v_dim=9
 
 contains
@@ -70,9 +69,9 @@ contains
 
         pbuf_size=size(pbuf)
         flag_size = size(flag)
-        allocate(dist(pbuf_size))
-        allocate(num_par(-energy_bin:energy_bin,spec_num))
-        allocate(num_par_v(-energy_bin:energy_bin,v_dim,spec_num))
+        allocate(dist(pbuf_size,ship_num))
+        allocate(num_par(-energy_bin:energy_bin,spec_num,ship_num))
+        allocate(num_par_v(-energy_bin:energy_bin,v_dim,spec_num,ship_num))
         call CTCAR_regarea_int(flag,flag_size,flag_id)
         call CTCAR_regarea_int(num_par,size(num_par),num_par_id)
         call CTCAR_regarea_int(num_par_v,size(num_par_v),num_par_v_id)
@@ -89,19 +88,21 @@ contains
         call get_environment_variable("STEP_TO",env_buffer)
         read(env_buffer,*) step_to
 
-        call get_environment_variable("SHIP_COORD", env_buffer)
-        !format: "(x1,y1,z1)-(x2,y2,z2)"
-        env_buffer = adjustl(env_buffer)  ! remove leading spaces
-        call replace_chars(env_buffer, '(', ' ')
-        call replace_chars(env_buffer, ')', ' ')
-        call replace_chars(env_buffer, '-', ' ')
-        call replace_chars(env_buffer, ',', ' ')
-        read(env_buffer, *) ship_x_from, ship_y_from, ship_z_from, ship_x_to, ship_y_to, ship_z_to
-        if (myid.eq.0) then
-            print *, "Ship Coordinates:"
-            print *, "From: (", ship_x_from, ",", ship_y_from, ",", ship_z_from, ")"
-            print *, "To:   (", ship_x_to, ",", ship_y_to, ",", ship_z_to, ")"
-        end if
+        do i=1,ship_num
+            write(env_name, "(A,I0)") "SHIP_COORD", i
+            call get_environment_variable(env_name, env_buffer)
+            !format: "(x1,y1,z1)-(x2,y2,z2)"
+            env_buffer = adjustl(env_buffer)  ! remove leading spaces
+            call replace_chars(env_buffer, ")-(", ",")
+            call replace_chars(env_buffer, "(", " ")
+            call replace_chars(env_buffer, ")", " ")
+            read(env_buffer, *) ship_x_from(i), ship_y_from(i), ship_z_from(i), ship_x_to(i), ship_y_to(i), ship_z_to(i)
+            if (myid.eq.0) then
+                print *, "Ship Coordinates:"
+                print *, "From: (", ship_x_from(i), ",", ship_y_from(i), ",", ship_z_from(i), ")"
+                print *, "To:   (", ship_x_to(i), ",", ship_y_to(i), ",", ship_z_to(i), ")"
+            end if
+        end do
 
         ! get plasma frequency for ion
         wp_ion_emses=wp(2)
@@ -173,24 +174,28 @@ contains
         implicit none
         logical status1
         integer status2(MPI_STATUS_SIZE),ierr
-        integer energy_index,j,species,pbuf_valid_size,v_sum_size(spec_num)
-        real(kind=8) :: v(v_dim),energy,v_sum(spec_num,3),v_avg(spec_num,3)
+        integer bin_num,j,species,pbuf_valid_size,v_sum_size(spec_num,ship_num)
+        real(kind=8) :: v(v_dim),energy,v_sum(spec_num,3,ship_num),v_avg(spec_num,3,ship_num)
         
-        num_par(:,:)=0
-        num_par_v(:,:,:)=0
-        v_sum(:,:)=0
-        v_sum_size(:)=0
+        num_par=0
+        num_par_v=0
+        v_sum=0
+        v_sum_size=0
 
         !set position of satellite
         shipx=ship_x_from+(ship_x_to-ship_x_from)*float(istep-step_from)/float(step_to-step_from)
         shipy=ship_y_from+(ship_y_to-ship_y_from)*float(istep-step_from)/float(step_to-step_from)
         shipz=ship_z_from+(ship_z_to-ship_z_from)*float(istep-step_from)/float(step_to-step_from)
         if (myid.eq.0.and.step_from.lt.istep.and.istep.lt.step_to) then
-            print *,"ship position=",shipx,shipy,shipz
+            do i=1,ship_num
+                print *,"ship",i,"position=",shipx(i),shipy(i),shipz(i)
+            end do
         end if
 
-        dist(:)=sqrt((pbuf(:)%x-shipx)**2+(pbuf(:)%y-shipy)**2+(pbuf(:)%z-shipz)**2)
-        
+        do  i=1,ship_num
+            dist(:,i)=sqrt((pbuf%x-shipx(i))**2+(pbuf%y-shipy(i))**2+(pbuf%z-shipz(i))**2)
+        end do
+
         !check flag
         do while (.true.)
             if (flag(1).eq.0) then
@@ -204,66 +209,70 @@ contains
 
         !calculate energy
         pbuf_valid_size=sum(totalp)
-        energy_size=0
-        do i=1, pbuf_valid_size
-            if (dist(i).lt.neighbour_thr.and.step_from.lt.istep.and.istep.lt.step_to) then
-                energy_size=energy_size+1
-                species=pbuf(i)%spec
-                !energy(eV)
-                if (species.eq.1) then
-                    energy=electron_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio_k**2)/2/ion_charge
-                else
-                    energy=ion_mass*(pbuf(i)%vx**2+pbuf(i)%vy**2+pbuf(i)%vz**2)/(vel_ratio_k**2)/2/ion_charge
-                end if
-                !velocity(m/s)
-                v(4)=pbuf(i)%vx
-                v(5)=pbuf(i)%vy
-                v(6)=pbuf(i)%vz
-                v(1:3)=abs(v(4:6))
-                v(7:9)=-v(4:6)
-                v(:)=v(:)/vel_ratio_k
-                v_sum(species,:)=v_sum(species,:)+v(1:3)
-                v_sum_size(species)=v_sum_size(species)+1
-                !check energy
-                if (energy.gt.0) then
-                    energy_index=int(10*log10(energy))
-                    !check boundary
-                    energy_index=max(energy_index,lbound(num_par, 1))
-                    energy_index=min(energy_index,ubound(num_par, 1))
-                    !switch to change unit of histogram
-                    if (correct_by_bin_width.eq.1) then
-                        ![1/m^3/eV]
-                        num_par(energy_index,species)=num_par(energy_index,species)+1
+        do i=1,ship_num
+            energy_size=0
+            do j=1, pbuf_valid_size
+                if (dist(j,i).lt.neighbour_thr.and.step_from.lt.istep.and.istep.lt.step_to) then
+                    energy_size=energy_size+1
+                    species=pbuf(j)%spec
+                    !energy(eV)
+                    if (species.eq.1) then
+                        energy=electron_mass*(pbuf(j)%vx**2+pbuf(j)%vy**2+pbuf(j)%vz**2)/(vel_ratio_k**2)/2/ion_charge
                     else
-                        ![eV/m^3/eV]
-                        num_par(energy_index,species)=num_par(energy_index,species)+energy
+                        energy=ion_mass*(pbuf(j)%vx**2+pbuf(j)%vy**2+pbuf(j)%vz**2)/(vel_ratio_k**2)/2/ion_charge
                     end if
-                end if
-                do j=1,v_dim
-                    if (v(j).gt.0) then
-                        energy_index=int(10*log10(v(j)))
+                    !velocity(m/s)
+                    v(4)=pbuf(j)%vx
+                    v(5)=pbuf(j)%vy
+                    v(6)=pbuf(j)%vz
+                    v(1:3)=abs(v(4:6))
+                    v(7:9)=-v(4:6)
+                    v(:)=v(:)/vel_ratio_k
+                    v_sum(species,:,i)=v_sum(species,:,i)+v(1:3)
+                    v_sum_size(species,i)=v_sum_size(species,i)+1
+                    !check energy
+                    if (energy.gt.0) then
+                        bin_num=int(10*log10(energy))
                         !check boundary
-                        energy_index=max(energy_index,lbound(num_par_v, 1))
-                        energy_index=min(energy_index,ubound(num_par_v, 1))
-                        num_par_v(energy_index,j,species)=num_par_v(energy_index,j,species)+1
+                        bin_num=max(bin_num,lbound(num_par, 1))
+                        bin_num=min(bin_num,ubound(num_par, 1))
+                        !switch to change unit of histogram
+                        if (correct_by_bin_width.eq.1) then
+                            ![1/m^3/eV]
+                            num_par(bin_num,species,i)=num_par(bin_num,species,i)+1
+                        else
+                            ![eV/m^3/eV]
+                            num_par(bin_num,species,i)=num_par(bin_num,species,i)+energy
+                        end if
                     end if
-                end do
-            end if
-        end do
+                    do k=1,v_dim
+                        if (v(k).gt.0) then
+                            bin_num=int(10*log10(v(k)))
+                            !check boundary
+                            bin_num=max(bin_num,lbound(num_par_v, 1))
+                            bin_num=min(bin_num,ubound(num_par_v, 1))
+                            num_par_v(bin_num,k,species,i)=num_par_v(bin_num,k,species,i)+1
+                        end if
+                    end do
+                end if
+            end do
         
-        !set flag
-        flag(1)=0
-        flag(2)=myid
-        flag(3)=pbuf_size
-        flag(4)=pbuf_mem
-        flag(5)=istep
-        flag(6)=energy_size
+            !set flag
+            flag(1)=0
+            flag(2)=myid
+            flag(3)=pbuf_size
+            flag(4)=pbuf_mem
+            flag(5)=istep
+            flag(6)=energy_size
+        end do
         !ランクが保有する粒子のうち衛星に近いものの速度成分の平均
-        if (v_sum_size(1).gt.0.and.v_sum_size(2).gt.0) then
-            v_avg(1,:)=v_sum(1,:)/v_sum_size(1)
-            v_avg(2,:)=v_sum(2,:)/v_sum_size(2)
-            !print *,"step",istep,"rank",myid,"avg_v=",v_avg
-        end if
+        do i=1,ship_num
+            if (v_sum_size(1,i).eq.0) v_sum_size(1,i)=1
+            if (v_sum_size(2,i).eq.0) v_sum_size(2,i)=1
+            v_avg(1,:,i)=v_sum(1,:,i)/v_sum_size(1,i)
+            v_avg(2,:,i)=v_sum(2,:,i)/v_sum_size(2,i)
+        end do
+        !print *,"step",istep,"rank",myid,"avg_v=",v_avg
     end subroutine cotocoa_mainstep
 
     subroutine cotocoa_finalize
@@ -274,12 +283,37 @@ contains
     end subroutine cotocoa_finalize
 
     subroutine replace_chars(str, old, new)
+        implicit none
         character(len=*), intent(inout) :: str
-        character(len=1), intent(in) :: old, new
-        integer :: i
-        do i = 1, len_trim(str)
-            if (str(i:i) == old) str(i:i) = new
+        character(len=*), intent(in) :: old, new
+        character(len=1000) :: temp
+        integer :: pos, len_old, len_new, len_str, out_pos
+    
+        len_old = len_trim(old)
+        len_new = len_trim(new)
+        len_str = len_trim(str)
+        temp = ""
+        out_pos = 1
+        pos = index(str, old)
+    
+        do while (pos > 0)
+            !Copy the part before the replacement target
+            temp(out_pos:out_pos + pos - 2) = str(1:pos - 1)
+            out_pos = out_pos + pos - 1
+    
+            !Copy the string to be replaced
+            temp(out_pos:out_pos + len_new - 1) = new
+            out_pos = out_pos + len_new
+    
+            !Skip replaced part and search next
+            str = str(pos + len_old:)
+            len_str = len_trim(str)
+            pos = index(str, old)
         end do
-    end subroutine replace_chars
+    
+        !Copy the rest of the string
+        temp(out_pos:out_pos + len_str - 1) = str
+        str = temp
+end subroutine replace_chars
 
 end module m_ctcamain

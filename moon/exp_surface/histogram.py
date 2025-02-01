@@ -5,6 +5,7 @@ from matplotlib.ticker import FuncFormatter
 import pandas as pd
 import numpy as np
 import os
+import sys
 
 # custom formatter for y-axis
 def log_formatter(value, tick_number):
@@ -20,8 +21,7 @@ def create_hist2d(axe, df, column, title):
 	#set scale for energy(10*log10eV -> linear scale)
 	axe.yaxis.set_major_formatter(FuncFormatter(log_formatter))
 
-#default file name: output.csv
-file_name = os.environ.get("OUTPUT_FILE_NAME", "output.csv")
+file_name = sys.argv[1]
 input_without_extension = os.path.splitext(file_name)[0]
 
 #whether correct data by bin width
