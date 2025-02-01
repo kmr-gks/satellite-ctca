@@ -38,10 +38,6 @@ export CORRECT_BY_BIN_WIDTH=0
 
 #for python script after simulation
 export OUTPUT_DIR_NAME="${SLURM_JOB_ID}mag.${SHIP_COORD}.out"
-for i in $(seq 1 $SHIP_NUM); do
-    eval "SHIP_COORD=\$SHIP_COORD$i"
-    eval "export OUTPUT_FILE_NAME$i=\"\${SHIP_COORD}.csv\""
-done
 
 echo "output file: $OUTPUT_DIR_NAME"
 mkdir $OUTPUT_DIR_NAME
@@ -65,7 +61,8 @@ mv *.h5 chgacm1 chgacm2 chgmov currnt energy energy1 energy2 ewave icur influx i
 
 echo "Running python script with $OUTPUT_DIR_NAME"
 for i in $(seq 1 $SHIP_NUM); do
-    eval "python ../histogram.py \"\$OUTPUT_FILE_NAME$i\""
+	eval "SHIP_COORD=\$SHIP_COORD$i"
+	python ../histogram.py "${SHIP_COORD}.csv"
 done
 
 date

@@ -84,8 +84,9 @@ program worker
   allocate(output_file_name(ship_num))
   allocate(output_file_unit(ship_num))
   do ship_i=1,ship_num
-    write(env_name, "(A,I0)") "OUTPUT_FILE_NAME", ship_i
-    call get_environment_variable(env_name,output_file_name(ship_i))
+    write(env_name, "(A,I0)") "SHIP_COORD", ship_i
+    call get_environment_variable(env_name,env_buffer)
+    write(output_file_name(ship_i), "(A,A)") trim(env_buffer), ".csv"
     print*,"output_file_name(",ship_i,")=",output_file_name(ship_i)
     !open the output file
     output_file_unit(ship_i)=ship_i+10
