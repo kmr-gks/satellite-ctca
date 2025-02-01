@@ -144,8 +144,8 @@ program worker
   num_par_v_total=num_par_v_total*real_par_num_per_sup_par
   !take average by step (time)
   !配列の時間の次元について、複数のステップのデータが1行に対応するときは対応ステップ数で割り平均を取る
-  num_par_total=num_par_total/(nstep/step_csv)
-  num_par_v_total=num_par_v_total/(nstep/step_csv)
+  num_par_total=num_par_total/((step_to-step_from+1)/step_csv)
+  num_par_v_total=num_par_v_total/((step_to-step_from+1)/step_csv)
   !devide by volume of observation range
   num_par_total=num_par_total/neighbour_vol_real
   !normalize
