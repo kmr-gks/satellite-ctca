@@ -1,8 +1,9 @@
 import emout
 import matplotlib.pyplot as plt
 import os
+import sys
 
-job = '3982757'
+job = sys.argv[1]
 dirname=job+'_plot/'
 
 data = emout.Emout('output/' + job)
@@ -10,7 +11,7 @@ print("read:", job)
 os.makedirs(job + '_plot',exist_ok=True)
 
 print(data.phisp[:].val_si.shape)
-x, y, z = 128, 128, 60 #grid point
+x, y, z = int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
 
 data.phisp[-1, :, :, x].val_si.plot()
 data.j1yz[-1, :, :, x].val_si.plot(mode='stream')

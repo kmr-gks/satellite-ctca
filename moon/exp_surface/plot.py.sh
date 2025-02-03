@@ -10,5 +10,5 @@
 exec 2>&1
 
 date
-python plot.py
+python plot.py 3982757 128 128 60
 date
