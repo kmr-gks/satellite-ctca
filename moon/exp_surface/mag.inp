@@ -11,14 +11,14 @@
 
 &jobcon
     jobnum(1:2) = 0, 1
-    nstep = 100
+    nstep = 100000
 /
 
 &digcon
     hdfdigstart = 0
-    intfoc = 20000
-    ifdiag = 20000
-    ijdiag = 20000
+    intfoc = 2000
+    ifdiag = 2000
+    ijdiag = 2000
     daverg = 1
     ipahdf(1:3) = 0, 0, 0
     ipadig(1:3) = 1024, 1024, 1024
@@ -29,6 +29,7 @@
 
 &plasma
     wp(1:3) = 2.10390362104881, 0.04909886429062906, 2.10390362104881
+    !wp(1:3) = 21.0390362104881, 0.4909886429062906, 21.0390362104881
     wc = 0.0
     cv = 10000.0
     phiz = 0.0
@@ -132,6 +133,7 @@
 &emissn
     ! Magnitude of the emitted charged particle current [A/m^2]
     curf(3) = 829.3982816842599
+    !curf(3) = 82939.82816842599
 
     ! Number of particle division for macroparticles.
     dnsf(3) = 10
@@ -163,7 +165,8 @@
 /
 
 &dipole
-    md = 1804770660944949.5
+    md = 180477066094495000
+    !md = 1804770660944950
 !    md = 0
     mdx = 128.0
     mdy = 128.0
