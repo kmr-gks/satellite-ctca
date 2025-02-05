@@ -32,6 +32,7 @@ if correct_by_bin_width:
 else:
 	colorbar_label_energy='Energy flux [eV/$\mathrm{m}^2$/s/eV]'
 colorbar_label_vel='Velocity Distribution'
+extension='.png'
 dpi=600
 
 #load data from file
@@ -70,7 +71,7 @@ fig.supxlabel(xlabel)
 fig.supylabel(ylabel)
 cbar=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=axes.ravel().tolist(), aspect=25, location="right", pad=0.1)
 cbar.set_label(colorbar_label_energy)
-plt.savefig(input_without_extension+description, dpi=dpi)
+plt.savefig(input_without_extension+description+extension, dpi=dpi)
 
 #save histograms for velocity
 columns = ['vx-p', 'vy-p', 'vz-p', 'vx-n', 'vy-n', 'vz-n']
@@ -107,4 +108,4 @@ for i in range(3):
 	fig.supylabel(ylabel)
 	cbar=fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=axes.ravel().tolist(), aspect=25, location="right", pad=0.1)
 	cbar.set_label(colorbar_label_vel)
-	plt.savefig(input_without_extension+file_name[i], dpi=dpi)
+	plt.savefig(input_without_extension+file_name[i]+extension, dpi=dpi)

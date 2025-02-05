@@ -94,7 +94,7 @@ contains
         do i=1,ship_num
             write(env_name, "(A,I0)") "SHIP_COORD", i
             call get_environment_variable(env_name, env_buffer)
-            print *, "SHIP_COORD=", env_buffer
+            !print *, "SHIP_COORD=", env_buffer
             !format: "(x1,y1,z1)-(x2,y2,z2)"
             env_buffer = adjustl(env_buffer)  ! remove leading spaces
             call replace_chars(env_buffer, ")-(", ",")
@@ -185,11 +185,11 @@ contains
         shipx=ship_x_from+(ship_x_to-ship_x_from)*float(istep-step_from)/float(step_to-step_from)
         shipy=ship_y_from+(ship_y_to-ship_y_from)*float(istep-step_from)/float(step_to-step_from)
         shipz=ship_z_from+(ship_z_to-ship_z_from)*float(istep-step_from)/float(step_to-step_from)
-        if (myid.eq.0.and.step_from.lt.istep.and.istep.lt.step_to) then
-            do i=1,ship_num
-                print *,"ship",i,"position=",shipx(i),shipy(i),shipz(i)
-            end do
-        end if
+        !if (myid.eq.0.and.step_from.lt.istep.and.istep.lt.step_to) then
+        !    do i=1,ship_num
+        !        print *,"ship",i,"position=",shipx(i),shipy(i),shipz(i)
+        !    end do
+        !end if
 
         do  i=1,ship_num
             dist(:,i)=sqrt((pbuf%x-shipx(i))**2+(pbuf%y-shipy(i))**2+(pbuf%z-shipz(i))**2)
