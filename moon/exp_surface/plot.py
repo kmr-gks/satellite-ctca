@@ -16,17 +16,17 @@ print(data.phisp[:].val_si.shape)
 if sys.argv[2]=='x':
 	x=int(sys.argv[3])
 	data.phisp[-1, :, :, x].val_si.plot()
-	data.j1yz[-1, :, :, x].val_si.plot(mode='stream',title=f'j1yz [A/m^2] at x={x*grid_length} [m]')
+	data.j1yz[-1, :, :, x].val_si.plot(mode='stream',title=f'Electron current density [A/$m^2$] at x={x*grid_length} [m]')
 	plt.savefig(dirname+f'j1yz_x{x*grid_length}.png')
 	plt.clf()
 
 	data.phisp[-1, :, :, x].val_si.plot()
-	data.j2yz[-1, :, :, x].val_si.plot(mode='stream',title=f'j2yz [A/m^2] at x={x*grid_length} [m]')
+	data.j2yz[-1, :, :, x].val_si.plot(mode='stream',title=f'Ion current density [A/$m^2$] at x={x*grid_length} [m]')
 	plt.savefig(dirname+f'j2yz_x{x*grid_length}.png')
 	plt.clf()
 
 	data.phisp[-1, :, :, x].val_si.plot()
-	data.jyz[-1, :, :, x].val_si.plot(mode='stream',title=f'jyz [A/m^2] at x={x*grid_length} [m]')
+	data.jyz[-1, :, :, x].val_si.plot(mode='stream',title=f'Current density [A/$m^2$] at x={x*grid_length} [m]')
 	plt.savefig(dirname+f'jyz_x{x*grid_length}.png')
 	plt.clf()
 
@@ -42,23 +42,27 @@ if sys.argv[2]=='x':
 	data.nd2p[:, :, :, x].val_si.gifplot(action='save', filename=dirname+f'nd2p_x{x*grid_length}.gif',title=f'Ion density [/cc] at x={x*grid_length} [m]')
 	plt.clf()
 
+	data.bx[-1, :, :, x].val_si.plot(savefilename=dirname+f'bx_x{x*grid_length}.png',title=f'X comp. of Magnetic field [A/m] at x={x*grid_length} [m]')
+	data.by[-1, :, :, x].val_si.plot(savefilename=dirname+f'by_x{x*grid_length}.png',title=f'Y comp. of Magnetic field [A/m] at x={x*grid_length} [m]')
+	data.bz[-1, :, :, x].val_si.plot(savefilename=dirname+f'bz_x{x*grid_length}.png',title=f'Z comp. of Magnetic field [A/m] at x={x*grid_length} [m]')
+
 	data.ex[-1, :, :, x].val_si.plot(savefilename=dirname+f'ex_x{x*grid_length}.png',title=f'X comp. of Electric field [V/m] at x={x*grid_length} [m]')
 	data.ey[-1, :, :, x].val_si.plot(savefilename=dirname+f'ey_x{x*grid_length}.png',title=f'Y comp. of Electric field [V/m] at x={x*grid_length} [m]')
 	data.ez[-1, :, :, x].val_si.plot(savefilename=dirname+f'ez_x{x*grid_length}.png',title=f'Z comp. of Electric field [V/m] at x={x*grid_length} [m]')
 elif sys.argv[2]=='y':
 	y=int(sys.argv[3])
 	data.phisp[-1, :, y, :].val_si.plot()
-	data.j1xz[-1, :, y, :].val_si.plot(mode='stream',title=f'j1xz [A/m^2] at y={y*grid_length} [m]')
+	data.j1xz[-1, :, y, :].val_si.plot(mode='stream',title=f'Electron current density [A/$m^2$] at y={y*grid_length} [m]')
 	plt.savefig(dirname+f'j1xz_y{y*grid_length}.png')
 	plt.clf()
 
 	data.phisp[-1, :, y, :].val_si.plot()
-	data.j2xz[-1, :, y, :].val_si.plot(mode='stream',title=f'j2xz [A/m^2] at y={y*grid_length} [m]')
+	data.j2xz[-1, :, y, :].val_si.plot(mode='stream',title=f'Ion current density [A/$m^2$] at y={y*grid_length} [m]')
 	plt.savefig(dirname+f'j2xz_y{y*grid_length}.png')
 	plt.clf()
 
 	data.phisp[-1, :, y, :].val_si.plot()
-	data.jxz[-1, :, y, :].val_si.plot(mode='stream',title=f'jxz [A/m^2] at y={y*grid_length} [m]')
+	data.jxz[-1, :, y, :].val_si.plot(mode='stream',title=f'Current density [A/$m^2$] at y={y*grid_length} [m]')
 	plt.savefig(dirname+f'jxz_y{y*grid_length}.png')
 	plt.clf()
 
@@ -74,23 +78,27 @@ elif sys.argv[2]=='y':
 	data.nd2p[:, :, y, :].val_si.gifplot(action='save', filename=dirname+f'nd2p_y{y*grid_length}.gif',title=f'Ion density [/cc] at y={y*grid_length} [m]')
 	plt.clf()
 
+	data.bx[-1, :, y, :].val_si.plot(savefilename=dirname+f'bx_y{y*grid_length}.png',title=f'X comp. of Magnetic field [A/m] at y={y*grid_length} [m]')
+	data.by[-1, :, y, :].val_si.plot(savefilename=dirname+f'by_y{y*grid_length}.png',title=f'Y comp. of Magnetic field [A/m] at y={y*grid_length} [m]')
+	data.bz[-1, :, y, :].val_si.plot(savefilename=dirname+f'bz_y{y*grid_length}.png',title=f'Z comp. of Magnetic field [A/m] at y={y*grid_length} [m]')
+
 	data.ex[-1, :, y, :].val_si.plot(savefilename=dirname+f'ex_y{y*grid_length}.png',title=f'X comp. of Electric field [V/m] at y={y*grid_length} [m]')
 	data.ey[-1, :, y, :].val_si.plot(savefilename=dirname+f'ey_y{y*grid_length}.png',title=f'Y comp. of Electric field [V/m] at y={y*grid_length} [m]')
 	data.ez[-1, :, y, :].val_si.plot(savefilename=dirname+f'ez_y{y*grid_length}.png',title=f'Z comp. of Electric field [V/m] at y={y*grid_length} [m]')
 elif sys.argv[2]=='z':
 	z=int(sys.argv[3])
 	data.phisp[-1, z, :, :].val_si.plot()
-	data.j1xy[-1, z, :, :].val_si.plot(mode='stream',title=f'j1xy [A/m^2] at z={z*grid_length} [m]')
+	data.j1xy[-1, z, :, :].val_si.plot(mode='stream',title=f'Electron current density [A/$m^2$] at z={z*grid_length} [m]')
 	plt.savefig(dirname+f'j1xy_z{z*grid_length}.png')
 	plt.clf()
 
 	data.phisp[-1, z, :, :].val_si.plot()
-	data.j2xy[-1, z, :, :].val_si.plot(mode='stream',title=f'j2xy [A/m^2] at z={z*grid_length} [m]')
+	data.j2xy[-1, z, :, :].val_si.plot(mode='stream',title=f'Ion current density [A/$m^2$] at z={z*grid_length} [m]')
 	plt.savefig(dirname+f'j2xy_z{z*grid_length}.png')
 	plt.clf()
 
 	data.phisp[-1, z, :, :].val_si.plot()
-	data.jxy[-1, z, :, :].val_si.plot(mode='stream',title=f'jxy [A/m^2] at z={z*grid_length} [m]')
+	data.jxy[-1, z, :, :].val_si.plot(mode='stream',title=f'Current density [A/$m^2$] at z={z*grid_length} [m]')
 	plt.savefig(dirname+f'jxy_z{z*grid_length}.png')
 	plt.clf()
 
@@ -105,7 +113,11 @@ elif sys.argv[2]=='z':
 	data.nd2p[-1, z, :, :].val_si.plot(savefilename=dirname+f'nd2p_z{z*grid_length}.png',title=f'Ion density [/cc] at z={z*grid_length} [m]')
 	data.nd2p[:, z, :, :].val_si.gifplot(action='save', filename=dirname+f'nd2p_z{z*grid_length}.gif',title=f'Ion density [/cc] at z={z*grid_length} [m]')
 	plt.clf()
-	
+
+	data.bx[-1, z, :, :].val_si.plot(savefilename=dirname+f'bx_z{z*grid_length}.png',title=f'X comp. of Magnetic field [A/m] at z={z*grid_length} [m]')
+	data.by[-1, z, :, :].val_si.plot(savefilename=dirname+f'by_z{z*grid_length}.png',title=f'Y comp. of Magnetic field [A/m] at z={z*grid_length} [m]')
+	data.bz[-1, z, :, :].val_si.plot(savefilename=dirname+f'bz_z{z*grid_length}.png',title=f'Z comp. of Magnetic field [A/m] at z={z*grid_length} [m]')
+
 	data.ex[-1, z, :, :].val_si.plot(savefilename=dirname+f'ex_z{z*grid_length}.png',title=f'X comp. of Electric field [V/m] at z={z*grid_length} [m]')
 	data.ey[-1, z, :, :].val_si.plot(savefilename=dirname+f'ey_z{z*grid_length}.png',title=f'Y comp. of Electric field [V/m] at z={z*grid_length} [m]')
 	data.ez[-1, z, :, :].val_si.plot(savefilename=dirname+f'ez_z{z*grid_length}.png',title=f'Z comp. of Electric field [V/m] at z={z*grid_length} [m]')
