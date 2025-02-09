@@ -29,19 +29,19 @@ if sys.argv[2]=='x':
 	plt.savefig(dirname+f'jyz_x{x}.png')
 	plt.clf()
 
-	data.phisp[-1, :, :, x].val_si.plot(savefilename=dirname+f'phisp_x{x}.png',title=f'phisp[V], x={x}')
+	data.phisp[-1, :, :, x].val_si.plot(savefilename=dirname+f'phisp_x{x}.png',title=f'Potential[V] at x={x} [m]')
 
-	data.phisp[:, :, :, x].val_si.gifplot(action='save', filename=dirname+f'phisp_x{x}.gif',title=f'phisp[V], x={x}')
+	data.phisp[:, :, :, x].val_si.gifplot(action='save', filename=dirname+f'phisp_x{x}.gif',title=f'Potential[V] at x={x} [m]')
 	plt.clf()
 
-	data.nd1p[-1, :, :, x].val_si.plot(savefilename=dirname+f'nd1p_x{x}.png',title=f'nd1p[/cc], x={x}')
+	data.nd1p[-1, :, :, x].val_si.plot(savefilename=dirname+f'nd1p_x{x}.png',title=f'Electron density[/cc] at x={x} [m]')
 
-	data.nd1p[:, :, :, x].val_si.gifplot(action='save', filename=dirname+f'nd1p_x{x}.gif',title=f'nd1p[/cc], x={x}')
+	data.nd1p[:, :, :, x].val_si.gifplot(action='save', filename=dirname+f'nd1p_x{x}.gif',title=f'Electron density[/cc] at x={x} [m]')
 	plt.clf()
 
-	data.nd2p[-1, :, :, x].val_si.plot(savefilename=dirname+f'nd2p_x{x}.png',title=f'nd2p[/cc], x={x}')
+	data.nd2p[-1, :, :, x].val_si.plot(savefilename=dirname+f'nd2p_x{x}.png',title=f'Ion density[/cc] at x={x} [m]')
 
-	data.nd2p[:, :, :, x].val_si.gifplot(action='save', filename=dirname+f'nd2p_x{x}.gif',title=f'nd2p[/cc], x={x}')
+	data.nd2p[:, :, :, x].val_si.gifplot(action='save', filename=dirname+f'nd2p_x{x}.gif',title=f'Ion density[/cc] at x={x} [m]')
 	plt.clf()
 elif sys.argv[2]=='y':
 	y=int(sys.argv[3])
@@ -60,19 +60,19 @@ elif sys.argv[2]=='y':
 	plt.savefig(dirname+f'jxz_y{y}.png')
 	plt.clf()
 
-	data.phisp[-1, :, y, :].val_si.plot(savefilename=dirname+f'phisp_y{y}.png',title=f'phisp[V], y={y}')
+	data.phisp[-1, :, y, :].val_si.plot(savefilename=dirname+f'phisp_y{y}.png',title=f'Potential[V] at y={y} [m]')
 
-	data.phisp[:, :, y, :].val_si.gifplot(action='save', filename=dirname+f'phisp_y{y}.gif',title=f'phisp[V], y={y}')
+	data.phisp[:, :, y, :].val_si.gifplot(action='save', filename=dirname+f'phisp_y{y}.gif',title=f'Potential[V] at y={y} [m]')
 	plt.clf()
 
-	data.nd1p[-1, :, y, :].val_si.plot(savefilename=dirname+f'nd1p_y{y}.png',title=f'nd1p[/cc], y={y}')
+	data.nd1p[-1, :, y, :].val_si.plot(savefilename=dirname+f'nd1p_y{y}.png',title=f'Electron density[/cc] at y={y} [m]')
 
-	data.nd1p[:, :, y, :].val_si.gifplot(action='save', filename=dirname+f'nd1p_y{y}.gif',title=f'nd1p[/cc], y={y}')
+	data.nd1p[:, :, y, :].val_si.gifplot(action='save', filename=dirname+f'nd1p_y{y}.gif',title=f'Electron density[/cc] at y={y} [m]')
 	plt.clf()
 
-	data.nd2p[-1, :, y, :].val_si.plot(savefilename=dirname+f'nd2p_y{y}.png',title=f'nd2p[/cc], y={y}')
+	data.nd2p[-1, :, y, :].val_si.plot(savefilename=dirname+f'nd2p_y{y}.png',title=f'Ion density[/cc] at y={y} [m]')
 
-	data.nd2p[:, :, y, :].val_si.gifplot(action='save', filename=dirname+f'nd2p_y{y}.gif',title=f'nd2p[/cc], y={y}')
+	data.nd2p[:, :, y, :].val_si.gifplot(action='save', filename=dirname+f'nd2p_y{y}.gif',title=f'Ion density[/cc] at y={y} [m]')
 	plt.clf()
 elif sys.argv[2]=='z':
 	z=int(sys.argv[3])
@@ -91,17 +91,17 @@ elif sys.argv[2]=='z':
 	plt.savefig(dirname+f'jxy_z{z}.png')
 	plt.clf()
 
-	data.phisp[-1, z, :, :].val_si.plot(savefilename=dirname+f'phisp_z{z}.png',title=f'phisp[V], z={z}')
+	data.phisp[-1, z, :, :].val_si.plot(savefilename=dirname+f'phisp_z{z}.png',title=f'Potential[V] at z={z} [m]')
 
-	data.phisp[:, z, :, :].val_si.gifplot(action='save', filename=dirname+f'phisp_z{z}.gif',title=f'phisp[V], z={z}')
+	data.phisp[:, z, :, :].val_si.gifplot(action='save', filename=dirname+f'phisp_z{z}.gif',title=f'Potential[V] at z={z} [m]')
 	plt.clf()
 
-	data.nd1p[-1, z, :, :].val_si.plot(savefilename=dirname+f'nd1p_z{z}.png',title=f'nd1p[/cc], z={z}')
+	data.nd1p[-1, z, :, :].val_si.plot(savefilename=dirname+f'nd1p_z{z}.png',title=f'Electron density[/cc] at z={z} [m]')
 
-	data.nd1p[:, z, :, :].val_si.gifplot(action='save', filename=dirname+f'nd1p_z{z}.gif',title=f'nd1p[/cc], z={z}')
+	data.nd1p[:, z, :, :].val_si.gifplot(action='save', filename=dirname+f'nd1p_z{z}.gif',title=f'Electron density[/cc] at z={z} [m]')
 	plt.clf()
 
-	data.nd2p[-1, z, :, :].val_si.plot(savefilename=dirname+f'nd2p_z{z}.png',title=f'nd2p[/cc], z={z}')
+	data.nd2p[-1, z, :, :].val_si.plot(savefilename=dirname+f'nd2p_z{z}.png',title=f'Ion density[/cc] at z={z} [m]')
 
-	data.nd2p[:, z, :, :].val_si.gifplot(action='save', filename=dirname+f'nd2p_z{z}.gif',title=f'nd2p[/cc], z={z}')
+	data.nd2p[:, z, :, :].val_si.gifplot(action='save', filename=dirname+f'nd2p_z{z}.gif',title=f'Ion density[/cc] at z={z} [m]')
 	plt.clf()
