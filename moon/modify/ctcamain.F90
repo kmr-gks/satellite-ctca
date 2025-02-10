@@ -51,7 +51,7 @@ module m_ctcamain
     real(kind=8) :: req_params_real(10)
     !number of super particles per energy(10*log10eV), and species(1or2), ship number
     integer,allocatable :: num_par(:,:,:),num_par_v(:,:,:,:)
-    integer :: num_par_id,num_par_v_id,energy_bin=100,spec_num=2,v_dim=9
+    integer :: num_par_id,num_par_v_id,energy_bin=100,spec_num=2,v_dim=9!energy_bin=1000
 
 contains
 
@@ -232,6 +232,7 @@ contains
                     !check energy
                     if (energy.gt.0) then
                         bin_num=int(10*log10(energy))
+                        !bin_num=int(100*log10(energy))
                         !check boundary
                         bin_num=max(bin_num,lbound(num_par, 1))
                         bin_num=min(bin_num,ubound(num_par, 1))
@@ -245,12 +246,18 @@ contains
                         end if
                     end if
                     do k=1,v_dim
-                        if (v(k).gt.0) then
+                        if (v(k).ge.1) then
                             bin_num=int(10*log10(v(k)))
+                            !bin_num=int(100*log10(v(k)))
                             !check boundary
                             bin_num=max(bin_num,lbound(num_par_v, 1))
                             bin_num=min(bin_num,ubound(num_par_v, 1))
-                            num_par_v(bin_num,k,species,i)=num_par_v(bin_num,k,species,i)+1
+                            !num_par_v(bin_num,k,species,i)=num_par_v(bin_num,k,species,i)+1
+                            if (correct_by_bin_width.eq.1) then
+                                num_par_v(bin_num,k,species,i)=num_par_v(bin_num,k,species,i)+1
+                            else
+                                num_par_v(bin_num,k,species,i)=num_par_v(bin_num,k,species,i)+v(k)
+                            end if
                         end if
                     end do
                 end if

@@ -148,15 +148,17 @@ program worker
   num_par_v_total=num_par_v_total/((step_to-step_from+1)/step_csv)
   !devide by volume of observation range
   num_par_total=num_par_total/neighbour_vol_real
-  !normalize
-  num_par_v_total = num_par_v_total / (spread(sum(num_par_v_total, dim=1), dim=1, ncopies=size(num_par_v_total, 1))+1)
+  
 
   !devide by extent of energy bin in log10 scale
   do i=-energy_bin,energy_bin
     energy_extent=10**((i+1)/10.0)-10**(i/10.0)
-    !print*,"energy_extent=10^",(i+1)/10.0-"10^",i/10.0,"=",10**((i+1)/10.0),"-",10**(i/10.0),"=",energy_extent
+    !energy_extent=10**((i+1)/100.0)-10**(i/100.0)
     num_par_total(i,:,:,:) = num_par_total(i,:,:,:)/energy_extent
+    num_par_v_total(i,:,:,:,:) = num_par_v_total(i,:,:,:,:)/energy_extent
   end do
+  !normalize
+  num_par_v_total = num_par_v_total / (spread(sum(num_par_v_total, dim=1), dim=1, ncopies=size(num_par_v_total, 1))+1)
   ! create dynamic format string
   format_string = '( *(G0, ",", I4, ",", I4, ",", G0,' // repeat('",", G0,', v_dim) // '/) )'
   do ship_i=1,ship_num
